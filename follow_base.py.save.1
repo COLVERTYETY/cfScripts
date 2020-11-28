@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+
+import numpy as np
+import rospy
+import tf
+from geometry_msgs.msg import TransformStamped
+#from tf2_msgs.msg import TFMessage
+import tf2_msgs.msg
+from pycrazyswarm import *
+import uav_trajectory
+
+
+def callback(cf2):
+
+    #cf2 is a : cf2=tf2_msgs.msg.TFMessage([t])
+    #with t : t=geometry_msgs.msg.TransformStamped()
+
+    #create cf to be a TransformStamped:
+    cf = cf2.transforms[0]
+    print(cf)
+
+    x = cf.transform.translation.x
+    y = cf.transform.translation.y
+    z = cf.transform.translation.z
+    print(z)
+
+
+    if (z < 0.15):
+        z = 0.15
+
+    for cf in allcfs.crazyflies:
+        pos = np.array([x, y, z+0.5])
+        print(pos)
+        #cf.goTo(pos, 0, 1.0)
+        timeHelper.sleep(1.5+2.0)
+
+
+    #print("press button to continue...")
+    #swarm.input.waitUntilButtonPressed()
+
+
+def base_listener():
+    rospy.init_node('follow_node', anonymous=True) # this is a maybe
+    rospy.Subscriber('/tf', tf2_msgs.msg.TFMessage, callback)
+    #timeHelper.sleep(1.5)
+    rospy.spin()
+
+
+if __name__ == "__main__":
+    swarm = Crazyswarm()
+    timeHelper = swarm.timeHelper
+    allcfs = swarm.allcfs
+
+    Z = 1.0
+    allcfs.takeoff(targetHeight=Z, duration=1.4+Z)
+    timeHelper.sleep(1.5+Z)
+
+    #try:
+    #	base_listener()
+    while  ~KeyboardInterrupt:
+        pass
+
+    allcfs.land(targetHeight=0.06, duration=1.0+Z)
+    timeHelper.sleep(1.0)
