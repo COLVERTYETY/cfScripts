@@ -31,7 +31,7 @@ class Crazyswarm:
         args, unknown = parser.parse_known_args(args)
 
         if crazyflies_yaml is None:
-            crazyflies_yaml = "../launch/crazyflies.yaml"
+            crazyflies_yaml = "/home/dvic/cs/ros_ws/src/crazyswarm/launch/crazyflies.yaml"
         if crazyflies_yaml.endswith(".yaml"):
             crazyflies_yaml = open(crazyflies_yaml, 'r').read()
 

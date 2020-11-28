@@ -1,0 +1,9 @@
+
+<launch>
+  <node name="drone2" pkg="crazyswarm" type="ros_action_server.py"/>
+    <remap to="drone2detect_perimeter" from="detect_perimeter"/>
+
+  <node name="drone3" pkg="crazyswarm" type="ros_action_server.py"/>
+    <remap to="drone3detect_perimeter" from="detect_perimeter"/>
+
+</launch>

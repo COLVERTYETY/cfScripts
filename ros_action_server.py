@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 import numpy as np
 import rospy
@@ -51,6 +51,7 @@ def speak(engine, text):
 class PerimeterMonitor(object):
 
     def __init__(self, name):
+        #self._action_name = name
 
         self.swarm = Crazyswarm()
         #self.timeHelper = swarm.timeHelper
@@ -79,12 +80,14 @@ class PerimeterMonitor(object):
         self._feedback2 = actionlib_tutorials.msg.doTrajFeedback()
         self._result2 = actionlib_tutorials.msg.doTrajResult()
         self._action_name2 = 'trajectory_action'
+        print (self._action_name2)
         self._as2 = actionlib.SimpleActionServer(self._action_name2, actionlib_tutorials.msg.doTrajAction, execute_cb=self.execute_cb2, auto_start = False)
         self._as2.start()
 
         self._feedback = actionlib_tutorials.msg.my_newFeedback()
         self._result = actionlib_tutorials.msg.my_newResult()
         self._action_name = 'detect_perimeter'
+        print (self._action_name)
         self._as = actionlib.SimpleActionServer(self._action_name, actionlib_tutorials.msg.my_newAction, execute_cb=self.execute_cb, auto_start = False)
         self._as.start()
         print("Ready to send move messages.")
@@ -298,11 +301,11 @@ class PerimeterMonitor(object):
 signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
-    #rospy.init_node('detect_perimeter') # this is a maybe
+    #rospy.init_node('hi') # this is a maybe
 
     #swarm = Crazyswarm()
     #timeHelper = swarm.timeHelper
     #allcfs = swarm.allcfs
-    perimeter_server = PerimeterMonitor('detect_perimeter')
+    perimeter_server = PerimeterMonitor(rospy.get_name())
     #server = FibonacciAction('detect_perimeter')
     rospy.spin()
