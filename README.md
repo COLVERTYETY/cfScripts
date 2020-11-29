@@ -4,3 +4,5 @@ Clone this github: https://github.com/ThomasCarstens/cfScripts
 https://github.com/ThomasCarstens/cfScripts/blob/master/handControl/handClassifier_IBM.py
 ### Drone commands: 
 https://github.com/ThomasCarstens/cfScripts/blob/master/joyFromGesture.py
+### Testing Crazyflie API and fixing motion capture
+CHANGELOG.md
