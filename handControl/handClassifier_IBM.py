@@ -9,7 +9,7 @@ import signal
 from collections import deque
 import statistics
 from statistics import mode#, multimode
-
+import math
 
 
 
@@ -147,7 +147,7 @@ def recognizeHandGesture(landmarks):
   if (middleFingerState == 'CLOSE' and indexFingerState == 'OPENUP' and ringFingerState == 'CLOSE' and littleFingerState == 'CLOSE' ):
     recognizedHandGesture ="INDEX"
 
-  if (thumbState=='CLOSE' and indexFingerState == 'CLOSE' and middleFingerState == 'CLOSE' and ringFingerState == 'CLOSE' and littleFingerState == 'CLOSE'):
+  if ( indexFingerState == 'CLOSE' and middleFingerState == 'CLOSE' and ringFingerState == 'CLOSE' and littleFingerState == 'CLOSE'):
     recognizedHandGesture = "FIST"
 
   print("Thumb : "+str(thumbState))
@@ -190,22 +190,28 @@ def isSliding(landmarks,memo):
 
     actualPosition_x = landmarks.landmark[0].x
     actualPosition_y = landmarks.landmark[0].y
-    actualPosition_z = landmarks.landmark[0].z
+    actualPosition_x2 = landmarks.landmark[9].x
+    actualPosition_y2 = landmarks.landmark[9].y
+    
 
-    print ("x is", actualPosition_x)
+    
 
     if memo == None:
-        memo=[landmarks.landmark[0].x,landmarks.landmark[0].y,landmarks.landmark[0].z]
+        memo=[landmarks.landmark[0].x,landmarks.landmark[0].y,landmarks.landmark[9].x,landmarks.landmark[9].y]
 
-    lastPosition_x,lastPosition_y,lastPosition_z = memo[0],memo[1],memo[2]
+    lastPosition_x,lastPosition_y,lastPosition_x2,lastPosition_y2 = memo[0],memo[1],memo[2],memo[3]
 
     slide = ""
 
+    last_distance= math.sqrt((lastPosition_x2-lastPosition_x)**2+(lastPosition_y2-lastPosition_y)**2)
+    actual_distance= math.sqrt((actualPosition_x2-actualPosition_x2)**2+(actualPosition_y2-actualPosition_y)**2)
 
-    # if actualPosition_z - lastPosition_z > 0.000007:
-    #     slide = "ZOOM OUT"
-    # elif actualPosition_z - lastPosition_z < -0.000007:
-    #     slide = "ZOOM IN"
+    print("distances :",last_distance-actual_distance)
+
+    if last_distance-actual_distance > 0.001:
+        slide = "ZOOM OUT"
+    elif last_distance - actual_distance < -0.001:
+        slide = "ZOOM IN"
     if actualPosition_x - lastPosition_x > 0.005:
         slide = "RIGHT SLIDE"
     elif actualPosition_x - lastPosition_x < -0.005:
@@ -216,10 +222,10 @@ def isSliding(landmarks,memo):
         slide = "UP SLIDE"
 
     if slide == "":
-        memory=[lastPosition_x,lastPosition_y,lastPosition_z]
+        memory=[lastPosition_x,lastPosition_y,lastPosition_x2,lastPosition_y2]
 
     else :
-        memory= [actualPosition_x, actualPosition_y,actualPosition_z]
+        memory= [actualPosition_x, actualPosition_y,actualPosition_x2,actualPosition_y2]
 
     return [slide,memory]
 
@@ -326,9 +332,9 @@ if __name__ == '__main__':
     try:
         #Testing our function
         rospy.init_node('hand', anonymous=True)
-        handsignal_publisher = rospy.Publisher('/hand/signal', String, queue_size=10)
-        handslide_publisher = rospy.Publisher('/hand/direction', String, queue_size=10)
-        handforward_publisher = rospy.Publisher('/hand/forward', String, queue_size=10)
+        handsignal_publisher = rospy.Publisher('/cf2/signal', String, queue_size=10)
+        #handslide_publisher = rospy.Publisher('/hand/direction', String, queue_size=10)
+        #handforward_publisher = rospy.Publisher('/hand/forward', String, queue_size=10)
         global d_signal, d_slide, trigger
         d_signal = deque([], 10)
         d_slide = deque([], 10)
