@@ -6,7 +6,7 @@ import rospy
 import cv2
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 import time
 
@@ -21,7 +21,7 @@ class image_converter:
     self.image_pub = rospy.Publisher("image_topic_2",Image,queue_size=1000)
 
     self.bridge = CvBridge()
-    self.image_sub = rospy.Subscriber("rrbot/camera1/image_raw",Image,self.callback)
+    self.image_sub = rospy.Subscriber("/cf2/feed",CompressedImage,self.callback)
     
 
 
