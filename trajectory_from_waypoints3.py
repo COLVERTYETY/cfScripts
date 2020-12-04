@@ -31,11 +31,17 @@ def fly():
 	timeHelper.sleep(3.0)
 
 def fly_two_drones():
-    for i in range(TRIALS):
-        allcfs.crazyflies[0].takeoff(targetHeight=0.5, duration=3.0)
-        allcfs.crazyflies[1].takeoff(targetHeight=0.2, duration=3.0)
 
-        timeHelper.sleep(2.5)
+    allcfs.crazyflies[0].takeoff(targetHeight=0.5, duration=3.0)
+    allcfs.crazyflies[1].takeoff(targetHeight=0.5, duration=3.0)
+
+    for i in range(TRIALS):
+        #allcfs.crazyflies[0].takeoff(targetHeight=0.5, duration=3.0)
+        #allcfs.crazyflies[1].takeoff(targetHeight=0.5, duration=3.0)
+
+        #timeHelper.sleep(2.5)
+        print("press button to continue...")
+        swarm.input.waitUntilButtonPressed()
             #for cf in allcfs.crazyflies:
             #    pos = cf.position() + np.array([0, 0, 1.0])
             #    cf.goTo(pos, 0, 2.0)
@@ -47,11 +53,6 @@ def fly_two_drones():
             #timeHelper.sleep(traj1.duration * TIMESCALE + 2.0)
         timeHelper.sleep(1.0)
 
-        print("press button to continue...")
-        swarm.input.waitUntilButtonPressed()
-
-        allcfs.land(targetHeight=0.06, duration=2.0)
-        timeHelper.sleep(3.0)
 
 
 def fly_nostops():
@@ -122,6 +123,10 @@ if __name__ == "__main__":
                         cf.uploadTrajectory(0, 0, traj0)
                 if nb_drones == "2":
                 	fly_two_drones()
+                        print("press button to continue...")
+                        swarm.input.waitUntilButtonPressed()
+                        allcfs.land(targetHeight=0.06, duration=2.0)
+                        timeHelper.sleep(3.0)
                 if nb_drones == "1":
                         fly()
 

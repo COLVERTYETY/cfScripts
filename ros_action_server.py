@@ -51,12 +51,13 @@ def speak(engine, text):
 class PerimeterMonitor(object):
 
     def __init__(self, name):
+        print(name)
         #self._action_name = name
 
         self.swarm = Crazyswarm()
         #self.timeHelper = swarm.timeHelper
         self.allcfs = self.swarm.allcfs
-        speak (engine, "Action server activated.")
+        #speak (engine, "Action server activated.")
 
         # self._goal = actionlib_tutorials.msg.MoveToGoal().point
         # print ("point should be", self._goal)
@@ -237,17 +238,18 @@ class PerimeterMonitor(object):
                 cf.takeoff(0.5, 5.0)
                 cf.goTo(self.waypoint, yaw=0, duration=5.0)
 
-                if self._as.is_preempt_requested():
-                    rospy.loginfo('%s: Preempted' % self._action_name)
-                    self._as.set_preempted()
-                    success = False
-                    break
-
             #now we test if he has reached the desired point.
         self.takeoff_transition()
 
 
-        if self.success == False:
+        while self.success == False:
+
+
+            if self._as.is_preempt_requested():
+                rospy.loginfo('%s: Preempted' % self._action_name)
+                self._as.set_preempted()
+                success = False
+                break
 
             print ("Not yet...")
 
@@ -279,7 +281,7 @@ class PerimeterMonitor(object):
     def euclidean_distance(self, goal_pose):
         """Euclidean distance between current pose and the goal."""
         euclidean_distance= sqrt(pow((goal_pose.x - self.cf2_pose.x), 2) + pow((goal_pose.y - self.cf2_pose.y), 2) + pow((goal_pose.z - self.cf2_pose.z), 2))
-        #print("distance to goal is", round(euclidean_distance, 4))
+        print("distance to goal is", round(euclidean_distance, 4))
         return euclidean_distance
 
     def takeoff_transition(self):
@@ -306,6 +308,8 @@ if __name__ == "__main__":
     #swarm = Crazyswarm()
     #timeHelper = swarm.timeHelper
     #allcfs = swarm.allcfs
+    print ("sup", rospy.get_name())
     perimeter_server = PerimeterMonitor(rospy.get_name())
+
     #server = FibonacciAction('detect_perimeter')
     rospy.spin()
