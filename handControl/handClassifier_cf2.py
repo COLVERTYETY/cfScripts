@@ -150,6 +150,9 @@ def recognizeHandGesture(landmarks):
   if ( indexFingerState == 'CLOSE' and middleFingerState == 'CLOSE' and ringFingerState == 'CLOSE' and littleFingerState == 'CLOSE'):
     recognizedHandGesture = "FIST"
 
+  if (landmarks.landmark[8].y>landmarks.landmark[7].y and landmarks.landmark[8].y<landmarks.landmark[5].y and landmarks.landmark[12].y>landmarks.landmark[11].y and landmarks.landmark[12].y<landmarks.landmark[9].y and landmarks.landmark[16].y>landmarks.landmark[15].y and landmarks.landmark[16].y<landmarks.landmark[13].y):
+    recognizedHandGesture = "GRAB"
+
   print("Thumb : "+str(thumbState))
   print ("Index : "+str(indexFingerState))
   print ("Middle : "+str(middleFingerState))
@@ -208,9 +211,9 @@ def isSliding(landmarks,memo):
 
     print("distances :",last_distance-actual_distance)
 
-    if last_distance-actual_distance > 0.001:
+    if last_distance-actual_distance > 0.0015:
         slide = "ZOOM OUT"
-    elif last_distance - actual_distance < -0.001:
+    if last_distance - actual_distance < -0.001:
         slide = "ZOOM IN"
     if actualPosition_x - lastPosition_x > 0.005:
         slide = "RIGHT SLIDE"

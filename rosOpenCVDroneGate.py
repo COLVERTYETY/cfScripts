@@ -21,11 +21,13 @@ class image_converter:
     self.image_pub = rospy.Publisher("image_topic_2",Image,queue_size=1000)
 
     self.bridge = CvBridge()
-    self.image_sub = rospy.Subscriber("/cf2/feed",CompressedImage,self.callback)
+    self.image_sub = rospy.Subscriber("/cf2/feed",Image,self.callback)
     
 
 
   def callback(self,data):
+    
+    print ("hello ")
     try:
       cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
     except CvBridgeError as e:
@@ -55,7 +57,10 @@ class image_converter:
     cv2.drawContours(opening_masked_img, contours, -1, (255,255,255), 2)
     masked_img = cv2.bitwise_and(cv_image, cv_image, mask=mask)
 
+    
+
     for c in contours:
+      
       (x, y, w, h) = cv2.boundingRect(c)
       
       vel_x=0
