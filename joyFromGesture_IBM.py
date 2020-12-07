@@ -44,6 +44,7 @@ class GestureDrone:
         self.cf = cf
         self.velocity = 0.2
         self.velocity2 = 0.3
+        self.releasevelocity = 0.8
         self.ang_velocity = 120
         self.takeoff_height = 0.5
 
@@ -62,29 +63,33 @@ class GestureDrone:
         print ('FIST emergency STOP')
         print('PEACE to go on follow mode')
         #self.cf2.takeoff(targetHeight=self.takeoff_height, duration=3.0)
+
+
         self.cf.takeoff(targetHeight=self.takeoff_height, duration=3.0)
         
         self.listener()
 
-
     def cf2_callback(self, msg):
+        global lastGesture, lastSlide
         print(msg.data)
+        
         #cf3 = self.cf3
         
         # while abs(self.cf.position()[0])>1.0 or abs(self.cf.position()[1])>1.0 or abs(self.cf.position()[0])>1.0:
         #     print ("go home now")
 
         #print (self.cf.position())
-        if msg.data == 'PEACE' and not self.followMode: #Activate followMODE
+        if msg.data == 'FIST' : #Activate followMODE
             #speak (engine, "Activating Hand following mode.")
             #print ("followMode ACTIVATED")
             self.followMode=True
 
-        if msg.data == 'INDEX' and self.followMode: #Activate SignalMode: 
+        if msg.data == 'PEACE' : #Activate SignalMode: 
             #speak (engine, "Activating signal mode.")
             #Deactivate followMODE
             #print ("SignalMode ACTIVATED")
             self.followMode=False
+            
 
         #print ("FollowMODE is", self.followMode)
         
@@ -102,34 +107,34 @@ class GestureDrone:
 
 
             if msg.data == 'SPIDERMAN':#start_up
-                #print("signalmode, spiderman.")
+                print("signalmode, spiderman.")
                 self.cf.takeoff(targetHeight=self.takeoff_height, duration=3.0)
 
                 
             if msg.data == 'THUMBDOWN':#start_up
-                #print(".")
+                print(".")
                 self.cf.land(0.05, duration=1.0)
 
 
             if msg.data == 'UP':#start_up
-                #print(".")
+                print(".")
                 self.cf.cmdVelocityWorld(np.array([0, 0, self.velocity]), yawRate=0)
-                #rospy.sleep()
+
 
             if msg.data == 'DOWN': #start_down
-                #print(".")
+                print(".")
                 self.cf.cmdVelocityWorld(np.array([0, 0, -self.velocity]), yawRate=0)
-                #rospy.sleep()
+
 
             if msg.data == 'RIGHT': #start_right
-                #print(".")
+                print(".")
                 self.cf.cmdVelocityWorld(np.array([-self.velocity, 0, 0]), yawRate=0)
-                #rospy.sleep()
+
 
             if msg.data == 'LEFT': #start_right
-                #print(".")
+                print(".")
                 self.cf.cmdVelocityWorld(np.array([self.velocity, 0, 0]), yawRate=0)
-                #rospy.sleep()
+
 
             # if signal == 'c': #start_down
             #     self.cf.cmdVelocityWorld(np.array([0, 0, -self.velocity]), yawRate=0)
@@ -137,7 +142,7 @@ class GestureDrone:
             #     self.cf.cmdVelocityWorld(np.array([0, 0, self.velocity]), yawRate=0)
             if (msg.data == '' or msg.data == 'UNKNOWN' or msg.data == 'FIST'):
                 print(".")
-                #self.cf.cmdVelocityWorld(np.array([0, 0, 0]), yawRate=0)
+
                 
 
                     #if key.char == 'q':
@@ -159,45 +164,71 @@ class GestureDrone:
         if self.followMode == True:
             print("in FOLLOW mode")
 
-            
-            if msg.data == 'RIGHT SLIDE' :#start_right
-                self.cf.cmdVelocityWorld(np.array([-self.velocity2, 0, 0]), yawRate=0)
-                print("slide right, follow.")
-                #pos = self.cf.position() + np.array([0, -0.05, 0])
-                #self.cf.goTo(pos, yawRate=0)
-                #self.cf.goTo(np.array([0, self.velocity, 0]), yawRate=0)
-                #pos = self.cf.position() + np.array([0, -self.velocity, 0])
+            if msg.data == 'UP' and lastGesture == 'FIST':
+                #print("!!!!!!! RELEASE !!!!!!!!.")
+                #print("MOVING IN DIRECTION:", lastSlide)
+                if lastSlide == 'LEFT SLIDE':
+                    self.cf.cmdVelocityWorld(np.array([self.releasevelocity, 0, 0]), yawRate=0)
+                if lastSlide == 'RIGHT SLIDE':
+                    self.cf.cmdVelocityWorld(np.array([-self.releasevelocity, 0, 0]), yawRate=0)
+                if lastSlide == 'UP SLIDE':
+                    self.cf.cmdVelocityWorld(np.array([0, 0, self.releasevelocity]), yawRate=0)
+                if lastSlide == 'DOWN SLIDE':
+                    self.cf.cmdVelocityWorld(np.array([0, 0, -self.releasevelocity]), yawRate=0)
 
-            if msg.data == 'LEFT SLIDE' :#start_left
-                print("slide left")
-                self.cf.cmdVelocityWorld(np.array([self.velocity2, 0, 0]), yawRate=0)
-                #pos = self.cf.position() + np.array([0, self.velocity, 0])                
-                #self.cf.goTo(np.array([0, self.velocity, 0]), yawRate=0)
-            
-            if msg.data == 'UP SLIDE': #start_up
-                print("slide up")
-                #pos = self.cf.position() + np.array([0, 0, self.velocity])               
-                self.cf.cmdVelocityWorld(np.array([0, 0, self.velocity2]), yawRate=0)
+            if msg.data != "" and msg.data != "ZOOM IN" and msg.data != "ZOOM OUT" and msg.data != 'LEFT SLIDE' and msg.data != 'RIGHT SLIDE' and msg.data != 'UP SLIDE' and msg.data != 'DOWN SLIDE':
+                lastGesture = msg.data
+                #print("lastGesture:", lastGesture)
+
+            if 'SLIDE' in msg.data:
+                lastSlide = msg.data
+                #print("lastSlide:", lastGesture)
+
+            else:
+
+
                 
-            if msg.data == 'DOWN SLIDE': #start_down
-                print("slide down")
-                #pos = self.cf.position() + np.array([0, 0, -self.velocity])
-                self.cf.cmdVelocityWorld(np.array([0, 0, -self.velocity2]), yawRate=0)
-                #self.cf.land(0.05, duration=1.0)
-
-            #if msg.data == 'FIST' or msg.data == '':
-                #print("stop")
-                #self.cf.cmdVelocityWorld(np.array([0, 0, 0]), yawRate=0)
-                #pos = self.cf.position() + np.array([0, 0, 0])
-
-            #else:
-                #self.cf.cmdVelocityWorld(np.array([0, 0, 0]), yawRate=0)
-
-                #pos = self.cf.position()
+                if msg.data == 'RIGHT SLIDE' :#start_right
+                    self.cf.cmdVelocityWorld(np.array([-self.velocity2, 0, 0]), yawRate=0)
+                    print("slide right, follow.")
 
 
+                if msg.data == 'LEFT SLIDE' :#start_left
+                    print("slide left")
+                    self.cf.cmdVelocityWorld(np.array([self.velocity2, 0, 0]), yawRate=0)
 
-            #self.cf.goTo(pos, yaw=0, duration=self.goToDuration)
+                
+                if msg.data == 'UP SLIDE': #start_up
+                    print("slide up")
+                    self.cf.cmdVelocityWorld(np.array([0, 0, self.velocity2]), yawRate=0)
+                    
+                if msg.data == 'DOWN SLIDE': #start_down
+                    print("slide down")
+                    self.cf.cmdVelocityWorld(np.array([0, 0, -self.velocity2]), yawRate=0)
+
+
+                if msg.data == 'ZOOM IN': #start_down
+                    print("slide down")
+                    self.cf.cmdVelocityWorld(np.array([0, -self.velocity2, 0]), yawRate=0)
+
+
+                if msg.data == 'ZOOM OUT': #start_down
+                    print("slide down")
+                    self.cf.cmdVelocityWorld(np.array([0, self.velocity2, 0]), yawRate=0)
+
+                #if msg.data == 'FIST' or msg.data == '':
+                    #print("stop")
+                    #self.cf.cmdVelocityWorld(np.array([0, 0, 0]), yawRate=0)
+                    #pos = self.cf.position() + np.array([0, 0, 0])
+
+                #else:
+                    #self.cf.cmdVelocityWorld(np.array([0, 0, 0]), yawRate=0)
+
+                    #pos = self.cf.position()
+
+
+
+                #self.cf.goTo(pos, yaw=0, duration=self.goToDuration)
 
 
 
@@ -217,7 +248,7 @@ class GestureDrone:
     def listener(self):
         #rospy.init_node('drone_RTcommands', anonymous=True)
         handsignal_subscriber = rospy.Subscriber('/cf2/signal', String, self.cf2_callback)
-        handsignal_subscriber = rospy.Subscriber('/cf3/signal2', String, self.cf3_callback)
+        #handsignal_subscriber = rospy.Subscriber('/cf3/signal2', String, self.cf3_callback)
 
         #handslide_subscriber = rospy.Subscriber('/hand/direction', String, self.slide_callback)
 
@@ -230,8 +261,9 @@ signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == '__main__':
 
-    global d_slide
+    global d_slide, lastGesture
     d_slide = deque([], 10)
+    lastGesture="None"
 
     swarm = Crazyswarm()
     timeHelper = swarm.timeHelper
