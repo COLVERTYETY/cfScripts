@@ -29,7 +29,7 @@ from math import pow, atan2, sqrt
 #      from urlparse import urlparse
 
 import pyttsx3
-global engine 
+global engine
 engine = pyttsx3.init()
 
 
@@ -39,7 +39,7 @@ def signal_handler(signal, frame):
 	sys.exit(0)
 
 def speak(engine, text):
-    
+
 
     # tts = gTTS(text=text, lang="en")
     # filename = "voice.mp3"
@@ -73,7 +73,7 @@ class PerimeterMonitor(object):
         #self.ttl1_subscriber = rospy.Subscriber('/turtle1/pose',
         #                                                Pose, self.update_pose1)
 
-        self.cf2_subscriber = rospy.Subscriber('/tf', tf2_msgs.msg.TFMessage, self.cf2_callback)
+
         self.cf2_pose = Point()
         self.cf3_pose = Point()
 
@@ -123,6 +123,23 @@ class PerimeterMonitor(object):
         #print("Returning [%s + %s = %s]"%(req.a, req.b, (req.a + req.b)))
         return 1.0
 
+
+
+
+    def PoseListener(self):
+        # A subscriber to the topic '/turtle1/pose'. self.update_pose is called
+        # when a message of type Pose is received.
+
+        # self.pose_subscriber1 = rospy.Subscriber('/turtle1/pose',
+        #                                         Pose, self.update_pose1)
+        # self.pose_subscriber2 = rospy.Subscriber('/turtle2/pose',
+        #                                         Pose, self.update_pose2)
+		#self.cf2_subscriber = rospy.Subscriber('/tf', tf2_msgs.msg.TFMessage, self.cf2_callback)
+
+        cf2_pose = rospy.wait_for_message("/tf", tf2_msgs.msg.TFMessage, timeout=None)
+        self.cf2_callback(cf2_pose)
+
+
     def setupKillService(self):
         #rospy.init_node('setupKillService')
         s = rospy.Service('kill_service', actionlib_tutorials.srv.killMotors(), self.handleKillService)
@@ -151,6 +168,8 @@ class PerimeterMonitor(object):
     	print("cf2_pose:", self.cf2_pose)
     	print("cf3_pose:", self.cf3_pose)
 
+
+
     def execute_cb2(self, goal):
         speak (engine, "Spiral trajectory.")
         traj1 = uav_trajectory.Trajectory()
@@ -162,15 +181,6 @@ class PerimeterMonitor(object):
         # append the seeds for the fibonacci sequence
         self._feedback2.time_elapsed = Duration(5)
         self.success == False
-
-        # publish info to the console for the user
-        #rospy.loginfo('%s: Now with tolerance %i with current pose [%s]' % (self._action_name, goal.order, ','.join(map(str,self._feedback.sequence))))
-
-        # check that preempt has not been requested by the client
-
-
-        # start executing the action
-        # x = TurtleBot()
 
         TRIALS = 1
         TIMESCALE = 0.5
@@ -228,23 +238,23 @@ class PerimeterMonitor(object):
             rospy.loginfo('%s: Succeeded' % self._action_name2)
             self._as2.set_succeeded(self._result2)
 
-    def execute_cb1(self, goal):
+    def execute_cb_cf2(self, goal):
         #speak (engine, "Moving to point.")
         rospy.wait_for_message('/tf', tf2_msgs.msg.TFMessage, timeout=None)
+		self.PoseListener()
 
-        self._goal1 = goal.point
-        self.cf_id = goal.id
-        print ("point should be", self._goal1)
+        #self._goal2 = goal.point
+        #self.cf_id = goal.id
+        print ("point should be", goal.point)
         print("id is " + str(goal.id))
-        self.waypoint = np.array([self._goal1.x, self._goal1.y, self._goal1.z])
+        self.waypoint = np.array([goal.point.x, goal.point.y, goal.point.z])
         self._feedback1.position = Pose()
 
         self._feedback1.time_elapsed = Duration(5)
         self.success == False
 
-        
+
         #speak("sending drone number " + str(goal.id) + " to x " + str(self._goal.x) + " y " + str(self._goal.y) + " z " + str(self._goal.z))
-        
 
         speak (engine, "YO")
         for cf in self.allcfs.crazyflies:
@@ -257,7 +267,7 @@ class PerimeterMonitor(object):
                 cf.goTo(self.waypoint, yaw=0, duration=5.0)
 
             #now we test if he has reached the desired point.
-        self.takeoff_transition()
+        self.takeoff_transition(goal.id, goal.point)
 
 
         while self.success == False:
@@ -299,39 +309,40 @@ class PerimeterMonitor(object):
             self._result1.updates_n = 1
             rospy.loginfo('My feedback: %s' % self._feedback1)
             rospy.loginfo('%s: Succeeded' % self._action_name1)
+			self._as1.set_succeeded(self._result1)
 
 
-            i = 0
-            while (i < 4):
-                self._as1.set_succeeded(self._result1)
-                i+=1
-                rospy.sleep(0.1)
+            # i = 0
+            # while (i < 4):
+            #     self._as1.set_succeeded(self._result1)
+            #     i+=1
+            #     rospy.sleep(0.1)
 
 
-            
 
-    def execute_cb(self, goal):
+
+    def execute_cb_cf3(self, goal):
         #speak (engine, "Moving to point.")
         rospy.wait_for_message('/tf', tf2_msgs.msg.TFMessage, timeout=None)
+		self.PoseListener()
 
-        self._goal = goal.point
-        self.cf_id = goal.id
-        print ("point should be", self._goal)
+        #self._goal1 = goal.point
+        #self.cf_id = goal.id
+        print ("point should be", goal.point)
         print("id is " + str(goal.id))
-        self.waypoint = np.array([self._goal.x, self._goal.y, self._goal.z])
-        self._feedback.position = Pose()
+        self.waypoint = np.array([goal.point.x, goal.point.y, goal.point.z])
+        self._feedback1.position = Pose()
 
-        self._feedback.time_elapsed = Duration(5)
+        self._feedback1.time_elapsed = Duration(5)
         self.success == False
 
-        
+
         #speak("sending drone number " + str(goal.id) + " to x " + str(self._goal.x) + " y " + str(self._goal.y) + " z " + str(self._goal.z))
-        
 
         speak (engine, "YO")
         for cf in self.allcfs.crazyflies:
             if cf.id == goal.id:
-                print(cf.id)
+                print(goal.id)
                 self._feedback.position.position.x = cf.position()[0]
                 self._feedback.position.position.y = cf.position()[1]
                 self._feedback.position.position.z = cf.position()[2]
@@ -339,15 +350,15 @@ class PerimeterMonitor(object):
                 cf.goTo(self.waypoint, yaw=0, duration=5.0)
 
             #now we test if he has reached the desired point.
-        self.takeoff_transition()
+        self.takeoff_transition(goal.id, goal.point)
 
 
         while self.success == False:
 
 
-            if self._as.is_preempt_requested():
-                rospy.loginfo('%s: Preempted' % self._action_name)
-                self._as.set_preempted()
+            if self._as1.is_preempt_requested():
+                rospy.loginfo('%s: Preempted' % self._action_name1)
+                self._as1.set_preempted()
                 success = False
                 break
 
@@ -360,7 +371,7 @@ class PerimeterMonitor(object):
                 #self._as.publish_feedback(self._feedback)
                 i = 0
                 while (i < 4):
-                    self._as.publish_feedback(self._feedback)
+                    self._as1.publish_feedback(self._feedback1)
                     i+=1
                     rospy.sleep(0.1)
                 #rospy.loginfo('%s: Now with tolerance %i with current pose [%s]' % (self._action_name, goal.order, ','.join(map(str,self._feedback.sequence))))
@@ -377,20 +388,20 @@ class PerimeterMonitor(object):
                 #self.swarm.input.waitUntilButtonPressed()
                 #cf.land(0.04, 2.5)
             print("Reached the perimeter!!")
-            self._result.time_elapsed = Duration(5)
-            self._result.updates_n = 1
-            rospy.loginfo('My feedback: %s' % self._feedback)
-            rospy.loginfo('%s: Succeeded' % self._action_name)
+            self._result1.time_elapsed = Duration(5)
+            self._result1.updates_n = 1
+            rospy.loginfo('My feedback: %s' % self._feedback1)
+            rospy.loginfo('%s: Succeeded' % self._action_name1)
+			self._as1.set_succeeded(self._result1)
 
 
-            i = 0
-            while (i < 4):
-                self._as.set_succeeded(self._result)
-                i+=1
-                rospy.sleep(0.1)
+            # i = 0
+            # while (i < 4):
+            #     self._as1.set_succeeded(self._result1)
+            #     i+=1
+            #     rospy.sleep(0.1)
 
 
-            
 
     def euclidean_distance(self, goal_pose, id):
         """Euclidean distance between current pose and the goal."""
@@ -406,18 +417,18 @@ class PerimeterMonitor(object):
         print("distance to goal is", round(euclidean_distance, 4))
         return euclidean_distance
 
-    def takeoff_transition(self):
+    def takeoff_transition(self, id, goal):
         distance_tolerance = 0.2
         #goal = Point()
         #goal.x = 0.0
         #goal.y = 0.0
         #goal.z = 0.
-        print (self._goal)
+        print ("goal is", goal)
 
         #while self.euclidean_distance(self._goal, self.cf_id) >= distance_tolerance:
         #    self.success = False
 
-        if self.euclidean_distance(self._goal, self.cf_id) < distance_tolerance:
+        if self.euclidean_distance(goal, self.cf_id) < distance_tolerance:
             self.success = True
             print("success is", self.success)
             #return success
