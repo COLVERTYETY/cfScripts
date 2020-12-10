@@ -1,4 +1,4 @@
-import cv2
+from cv2 import cv2
 import mediapipe as mp
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
@@ -8,7 +8,7 @@ import sys
 import signal
 from collections import deque
 import statistics
-from statistics import mode#, multimode
+from statistics import mode #, multimode
 import math
 
 
@@ -24,7 +24,7 @@ def recognizeHandGesture(landmarks):
   ringFingerState = 'UNKNOWN'
   littleFingerState = 'UNKNOWN'
 
-  recognizedHandGesture = None
+  recognizedHandGesture = ""
   pseudoFixKeyPoint = landmarks.landmark[2].y
   if (landmarks.landmark[3].y < pseudoFixKeyPoint and landmarks.landmark[4].y < landmarks.landmark[3].y and landmarks.landmark[4].y < landmarks.landmark[6].y ):
     thumbState = 'OPENUP'
@@ -150,6 +150,10 @@ def recognizeHandGesture(landmarks):
   if ( indexFingerState == 'CLOSE' and middleFingerState == 'CLOSE' and ringFingerState == 'CLOSE' and littleFingerState == 'CLOSE'):
     recognizedHandGesture = "FIST"
 
+  if (landmarks.landmark[8].y>landmarks.landmark[7].y and landmarks.landmark[8].y<landmarks.landmark[5].y and landmarks.landmark[12].y>landmarks.landmark[11].y and landmarks.landmark[12].y<landmarks.landmark[9].y and landmarks.landmark[16].y>landmarks.landmark[15].y and landmarks.landmark[16].y<landmarks.landmark[13].y):
+    recognizedHandGesture = "GRAB"
+  
+
   print("Thumb : "+str(thumbState))
   print ("Index : "+str(indexFingerState))
   print ("Middle : "+str(middleFingerState))
@@ -190,14 +194,14 @@ def isSliding(landmarks,memo):
 
     actualPosition_x = landmarks.landmark[0].x
     actualPosition_y = landmarks.landmark[0].y
-    actualPosition_x2 = landmarks.landmark[9].x
-    actualPosition_y2 = landmarks.landmark[9].y
+    actualPosition_x2 = landmarks.landmark[5].x
+    actualPosition_y2 = landmarks.landmark[5].y
     
 
     
 
     if memo == None:
-        memo=[landmarks.landmark[0].x,landmarks.landmark[0].y,landmarks.landmark[9].x,landmarks.landmark[9].y]
+        memo=[landmarks.landmark[0].x,landmarks.landmark[0].y,landmarks.landmark[5].x,landmarks.landmark[5].y]
 
     lastPosition_x,lastPosition_y,lastPosition_x2,lastPosition_y2 = memo[0],memo[1],memo[2],memo[3]
 
@@ -208,17 +212,17 @@ def isSliding(landmarks,memo):
 
     print("distances :",last_distance-actual_distance)
 
-    if last_distance-actual_distance > 0.001:
-        slide = "ZOOM OUT"
-    elif last_distance - actual_distance < -0.001:
-        slide = "ZOOM IN"
+    # if last_distance-actual_distance > 0.003:
+    #     slide = "ZOOM OUT"
+    # if last_distance - actual_distance < -0.001:
+    #     slide = "ZOOM IN"
     if actualPosition_x - lastPosition_x > 0.005:
         slide = "RIGHT SLIDE"
-    elif actualPosition_x - lastPosition_x < -0.005:
+    if actualPosition_x - lastPosition_x < -0.005:
         slide = "LEFT SLIDE"
-    elif actualPosition_y - lastPosition_y > 0.005:
+    if actualPosition_y - lastPosition_y > 0.005:
         slide = "DOWN SLIDE"
-    elif actualPosition_y - lastPosition_y < -0.005:
+    if actualPosition_y - lastPosition_y < -0.005:
         slide = "UP SLIDE"
 
     if slide == "":
@@ -229,15 +233,6 @@ def isSliding(landmarks,memo):
 
     return [slide,memory]
 
-def getStructuredLandmarks(landmarks):
-  structuredLandmarks = []
-  for j in range(42):
-    if( j %2 == 1):
-      structuredLandmarks.append({ 'x': landmarks[j - 1], 'y': landmarks[j] })
-  return structuredLandmarks
-
-#recognizedHandGesture = recognizeHandGesture(getStructuredLandmarks(test_landmarks_data))
-#print("recognized hand gesture: ", recognizedHandGesture) # print: "recognized hand gesture: 5"
 
 def addToQueueAndAverage(d, image):
 
@@ -245,15 +240,29 @@ def addToQueueAndAverage(d, image):
 
     #print("queue", d)
     #print ("len", len(d))
-    if len(d) == 10:
+    
+    if len(d) == precision:
       #print ("getting rid of ", d.popleft())
       try:
         #print ("average: ", mode(d))
-        return(mode(d))
+        rep = mode(d)
+        if (rep !=""):
+          numberOfRep = d.count(rep)
+          speed=numberOfRep/precision          #Speed value beetween 0-1
+          return([rep,speed])
+        else:
+          if  d.count(rep) <= precision*0.80  :
+            a = list(filter(lambda a: a != "", d))
+            rep2 = mode(a)
+            numberOfRep2 = a.count(rep2)
+            return([rep2,numberOfRep2/precision])
+
+          else:
+            return(['',0])
       except:
-        return('')
+        return(['',0])
     else:
-      return('')
+      return(['',0])
 
 def execute():
     print("execute")
@@ -293,7 +302,7 @@ def execute():
         image_signal = recognizeHandGesture(results.multi_hand_landmarks[0])
         video_signal = addToQueueAndAverage(d_signal, image_signal)
         #print("video_signal: ", video_signal)
-        text = video_signal
+        text = str(id)+str(video_signal[0])
         handsignal_publisher.publish(text)
 
         #Get Slide: should be based on pose with goTo().
@@ -303,15 +312,15 @@ def execute():
         #print("video_slide: ", video_slide)
         #handslide = String()
 
-        text2 = video_slide
+        text2 = str(id)+ str(video_slide[0])
+        speed = str(id) +str(video_slide[1])
         handsignal_publisher.publish(text2)
+        handsignal_publisher.publish(speed)
 
+        cv2.putText(image, text[1:], (360,360), font, 1, (0, 0, 255), 2, cv2.LINE_4)
 
-        print("z : "+str(results.multi_hand_landmarks[0].landmark[0].z))
-
-        cv2.putText(image, text, (360,360), font, 1, (0, 0, 255), 2, cv2.LINE_4)
-
-        cv2.putText(image, text2, (360,460), font, 1, (0, 0, 255), 2, cv2.LINE_4)
+        cv2.putText(image, text2[1:], (360,460), font, 1, (0, 0, 255), 2, cv2.LINE_4)
+        cv2.putText(image, speed[1:], (360,400), font, 1, (0, 0, 255), 2, cv2.LINE_4)
 
 
         #if text == 'SPIDERMAN':
@@ -332,12 +341,14 @@ if __name__ == '__main__':
     try:
         #Testing our function
         rospy.init_node('hand', anonymous=True)
-        handsignal_publisher = rospy.Publisher('/cf3/signal', String, queue_size=10)
-        #handslide_publisher = rospy.Publisher('/hand/direction', String, queue_size=10)
+        handsignal_publisher = rospy.Publisher('/cf2/signal', String, queue_size=10)
+        #handspeed_publisher = rospy.Publisher('/cf2/speed', String, queue_size=10)
         #handforward_publisher = rospy.Publisher('/hand/forward', String, queue_size=10)
-        global d_signal, d_slide, trigger
-        d_signal = deque([], 10)
-        d_slide = deque([], 10)
+        global d_signal, d_slide, trigger, precision, id
+        id = 3
+        precision = 20               #we can have several precision for the speed
+        d_signal = deque([], precision)
+        d_slide = deque([], precision)
         trigger = []
         execute()
 
