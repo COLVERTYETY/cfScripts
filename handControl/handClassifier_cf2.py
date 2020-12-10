@@ -302,7 +302,7 @@ def execute():
         image_signal = recognizeHandGesture(results.multi_hand_landmarks[0])
         video_signal = addToQueueAndAverage(d_signal, image_signal)
         #print("video_signal: ", video_signal)
-        text = video_signal[0]
+        text = str(id)+video_signal[0]
         handsignal_publisher.publish(text)
 
         #Get Slide: should be based on pose with goTo().
@@ -312,8 +312,8 @@ def execute():
         #print("video_slide: ", video_slide)
         #handslide = String()
 
-        text2 = video_slide[0]
-        speed = video_slide[1]
+        text2 = str(id)+ video_slide[0]
+        speed = str(id) +video_slide[1]
         handsignal_publisher.publish(text2)
         handsignal_publisher.publish(str(speed))
 
@@ -344,7 +344,8 @@ if __name__ == '__main__':
         handsignal_publisher = rospy.Publisher('/cf2/signal', String, queue_size=10)
         #handspeed_publisher = rospy.Publisher('/cf2/speed', String, queue_size=10)
         #handforward_publisher = rospy.Publisher('/hand/forward', String, queue_size=10)
-        global d_signal, d_slide, trigger, precision
+        global d_signal, d_slide, trigger, precision, id
+        id = 1
         precision = 20               #we can have several precision for the speed
         d_signal = deque([], precision)
         d_slide = deque([], precision)
