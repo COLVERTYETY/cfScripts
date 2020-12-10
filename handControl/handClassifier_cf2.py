@@ -302,7 +302,7 @@ def execute():
         image_signal = recognizeHandGesture(results.multi_hand_landmarks[0])
         video_signal = addToQueueAndAverage(d_signal, image_signal)
         #print("video_signal: ", video_signal)
-        text = str(id)+video_signal[0]
+        text = str(id)+str(video_signal[0])
         handsignal_publisher.publish(text)
 
         #Get Slide: should be based on pose with goTo().
@@ -312,15 +312,15 @@ def execute():
         #print("video_slide: ", video_slide)
         #handslide = String()
 
-        text2 = str(id)+ video_slide[0]
-        speed = str(id) +video_slide[1]
+        text2 = str(id)+ str(video_slide[0])
+        speed = str(id) +str(video_slide[1])
         handsignal_publisher.publish(text2)
-        handsignal_publisher.publish(str(speed))
+        handsignal_publisher.publish(speed)
 
-        cv2.putText(image, text, (360,360), font, 1, (0, 0, 255), 2, cv2.LINE_4)
+        cv2.putText(image, text[1:], (360,360), font, 1, (0, 0, 255), 2, cv2.LINE_4)
 
-        cv2.putText(image, text2, (360,460), font, 1, (0, 0, 255), 2, cv2.LINE_4)
-        cv2.putText(image, str(speed), (360,400), font, 1, (0, 0, 255), 2, cv2.LINE_4)
+        cv2.putText(image, text2[1:], (360,460), font, 1, (0, 0, 255), 2, cv2.LINE_4)
+        cv2.putText(image, speed[1:], (360,400), font, 1, (0, 0, 255), 2, cv2.LINE_4)
 
 
         #if text == 'SPIDERMAN':
