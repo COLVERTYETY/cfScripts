@@ -313,13 +313,14 @@ def execute():
         #handslide = String()
 
         text2 = video_slide[0]
-        speed2 = video_slide[1]
+        speed = video_slide[1]
         handsignal_publisher.publish(text2)
+        handsignal_publisher.publish(str(speed))
 
         cv2.putText(image, text, (360,360), font, 1, (0, 0, 255), 2, cv2.LINE_4)
 
         cv2.putText(image, text2, (360,460), font, 1, (0, 0, 255), 2, cv2.LINE_4)
-        cv2.putText(image, str(speed2), (360,400), font, 1, (0, 0, 255), 2, cv2.LINE_4)
+        cv2.putText(image, str(speed), (360,400), font, 1, (0, 0, 255), 2, cv2.LINE_4)
 
 
         #if text == 'SPIDERMAN':
@@ -341,7 +342,7 @@ if __name__ == '__main__':
         #Testing our function
         rospy.init_node('hand', anonymous=True)
         handsignal_publisher = rospy.Publisher('/cf2/signal', String, queue_size=10)
-        #handslide_publisher = rospy.Publisher('/hand/direction', String, queue_size=10)
+        #handspeed_publisher = rospy.Publisher('/cf2/speed', String, queue_size=10)
         #handforward_publisher = rospy.Publisher('/hand/forward', String, queue_size=10)
         global d_signal, d_slide, trigger, precision
         precision = 20               #we can have several precision for the speed
