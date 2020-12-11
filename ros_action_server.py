@@ -55,11 +55,14 @@ class PerimeterMonitor(object):
         #self._action_name = name
         self.swarm = Crazyswarm()
         self.allcfs = self.swarm.allcfs
+        self.timeHelper = self.swarm.timeHelper
         #speak (engine, "Action server activated.")
         self.cf2_pose = Point()
         self.cf3_pose = Point()
 
         self.success = False
+        self.collision_tolerance = 0.2
+        self.sleeptime = 4.0
 
         self._feedback2 = actionlib_tutorials.msg.doTrajFeedback()
         self._result2 = actionlib_tutorials.msg.doTrajResult()
@@ -106,8 +109,10 @@ class PerimeterMonitor(object):
 
 		#self.cf2_subscriber = rospy.Subscriber('/tf', tf2_msgs.msg.TFMessage, self.cf2_callback)
 
-        cf2_pose = rospy.wait_for_message("/tf", TFMessage, timeout=None)
-        self.cf2_callback(cf2_pose)
+        #cf2_pose = rospy.wait_for_message("/tf", TFMessage, timeout=None)
+        self.cf2_callback()
+
+
 
         # while cf2_pose.transforms[0].child_frame_id != 'cf2':
         #     cf2_pose = rospy.wait_for_message("/tf", TFMessage, timeout=None)
@@ -123,19 +128,55 @@ class PerimeterMonitor(object):
         self._as.start()
         print("ready to kill.")
 
-    def cf2_callback(self, data):
+    def cf2_callback(self):
     	#create cf to be a TransformStamped:
-    	cf = data.transforms[0]
-        if cf.child_frame_id == 'cf2':
-            self.cf2_pose.x = cf.transform.translation.x
-            self.cf2_pose.y = cf.transform.translation.y
-            self.cf2_pose.z = cf.transform.translation.z
-            print("cf2_pose: received")
-        if cf.child_frame_id == 'cf3':
-            self.cf3_pose.x = cf.transform.translation.x
-            self.cf3_pose.y = cf.transform.translation.y
-            self.cf3_pose.z = cf.transform.translation.z
-            print("cf3_pose: received")
+    	# cf = data.transforms[0]
+        # if cf.child_frame_id == 'cf2':
+        #     self.cf2_pose.x = cf.transform.translation.x
+        #     self.cf2_pose.y = cf.transform.translation.y
+        #     self.cf2_pose.z = cf.transform.translation.z
+        #     print("cf2_pose: received")
+        # if cf.child_frame_id == 'cf3':
+        #     self.cf3_pose.x = cf.transform.translation.x
+        #     self.cf3_pose.y = cf.transform.translation.y
+        #     self.cf3_pose.z = cf.transform.translation.z
+        #     print("cf3_pose: received")
+        """GET POSE FROM CF API"""
+        for cf in self.allcfs.crazyflies:
+            #print(cf.id, cf.position()[0])
+            if cf.id == 1:
+                self.cf1_pose.x = cf.position()[0]
+                self.cf1_pose.y = cf.position()[1]
+                self.cf1_pose.z = cf.position()[2]
+                #print("cf1_pose: received")
+            if cf.id == 2:
+                self.cf2_pose.x = cf.position()[0]
+                self.cf2_pose.y = cf.position()[1]
+                self.cf2_pose.z = cf.position()[2]
+                #print("cf2_pose: received")
+            if cf.id == 3:
+                self.cf3_pose.x = cf.position()[0]
+                self.cf3_pose.y = cf.position()[1]
+                self.cf3_pose.z = cf.position()[2]
+                #print("cf3_pose: received")
+
+        """CHECK FOR COLLISIONS BETWEEN CF2 AND CF3"""
+        collision_distance = self.euclidean_distance(self.cf3_pose, 2)
+        print ("DISTANCE IS", collision_distance)
+        if collision_distance < self.collision_tolerance:
+            print ("COLLISION AT", collision_distance)
+            collision_publisher.publish("1")
+            # for cf in self.allcfs.crazyflies:
+            #     cf.land(0.04, 2.5)
+            # rospy.sleep(self.sleeptime)
+
+        #and id 2 exists...
+        
+
+
+
+
+
 
 
     def execute_cb2(self, goal):
@@ -347,15 +388,15 @@ class PerimeterMonitor(object):
     def euclidean_distance(self, goal_pose, id):
         """Euclidean distance between current pose and the goal."""
         if id == 2:
-            print("distance for id 2")
+            #print("distance for id 2")
             euclidean_distance= sqrt(pow((goal_pose.x - self.cf2_pose.x), 2) + pow((goal_pose.y - self.cf2_pose.y), 2) + pow((goal_pose.z - self.cf2_pose.z), 2))
         elif id == 3:
-            print("distance for id 3")
+            #print("distance for id 3")
             euclidean_distance= sqrt(pow((goal_pose.x - self.cf3_pose.x), 2) + pow((goal_pose.y - self.cf3_pose.y), 2) + pow((goal_pose.z - self.cf3_pose.z), 2))
         else:
             print ("no id detected... aborting?", id)
         #euclidean_distance= sqrt(pow((goal_pose.x - self.cf2_pose.x), 2) + pow((goal_pose.y - self.cf2_pose.y), 2) + pow((goal_pose.z - self.cf2_pose.z), 2))
-        print("distance to goal is", round(euclidean_distance, 4))
+        #print("distance to goal is", round(euclidean_distance, 4))
         return euclidean_distance
 
     def takeoff_transition(self, id, goal):
@@ -373,5 +414,6 @@ if __name__ == "__main__":
     #rospy.init_node('hi') # CANNOT do this: conflicts with CrazyflieAPI.
 
     print ("Server name is:", rospy.get_name())
+    collision_publisher = rospy.Publisher('/collision', String, queue_size=10)
     perimeter_server = PerimeterMonitor(str(rospy.get_name())+str(1))
     rospy.spin()

@@ -150,6 +150,7 @@ class GestureDrone:
                 print("FIST")
                 #for cf in self.cf:
                 self.cf.land(0.05, duration = 3.0)
+                timeHelper.sleep(self.sleeptime)
 
             if msg.data == 'UP':#start_up
                 print(".")
@@ -202,6 +203,7 @@ class GestureDrone:
             if msg.data == 'FIST':#start_up
                 print("FIST")
                 self.cf.land(0.05, duration = 3.0)
+                timeHelper.sleep(self.sleeptime)
 
             # elif msg.data == 'UP' and lastGesture == 'GRAB':
             #     print("!!!!!!! RELEASE !!!!!!!!.")
