@@ -47,7 +47,7 @@ class GestureDrone:
         self.ang_velocity = 120
         self.takeoff_height = 0.5
 
-        self.sleeptime = 0.5
+        self.sleeptime = 4.0
         self.releasetime = 0.5
         self.msg= ''
         self.goToDuration=1.0
@@ -142,14 +142,18 @@ class GestureDrone:
             if msg.data == 'SPIDERMAN':#start_up
                 print("signalmode, spiderman.")
                 self.cf1.takeoff(targetHeight=self.takeoff_height, duration=3.0)
-                #self.cf2.takeoff(targetHeight=self.takeoff_height, duration=3.0)
-                #self.cf3.takeoff(targetHeight=self.takeoff_height, duration=3.0)
+                self.cf2.takeoff(targetHeight=self.takeoff_height, duration=3.0)
+                self.cf3.takeoff(targetHeight=self.takeoff_height, duration=3.0)
 
                 
             if msg.data == 'FIST':#start_up
                 print("FIST")
                 #for cf in self.cf:
-                self.cf.land(0.05, duration = 3.0)
+                self.cf1.land(0.05, duration = 3.0)
+                self.cf2.land(0.05, duration = 3.0)
+                self.cf3.land(0.05, duration = 3.0)
+                timeHelper.sleep(self.sleeptime)
+
 
             if msg.data == 'UP':#start_up
                 print(".")
@@ -201,8 +205,12 @@ class GestureDrone:
 
             if msg.data == 'FIST':#start_up
                 print("FIST")
-                self.cf.land(0.05, duration = 3.0)
+                self.cf1.land(0.05, duration = 3.0)
+                self.cf2.land(0.05, duration = 3.0)
+                self.cf3.land(0.05, duration = 3.0)            
+                timeHelper.sleep(self.sleeptime)
 
+                
             # elif msg.data == 'UP' and lastGesture == 'GRAB':
             #     print("!!!!!!! RELEASE !!!!!!!!.")
             #     print("MOVING IN DIRECTION:", lastSlide)
@@ -238,23 +246,29 @@ class GestureDrone:
                         #self.smoothvelocity= 0.3
                 except:
                     if msg.data == 'RIGHT SLIDE' :#start_right
-                        self.cf.cmdVelocityWorld(np.array([-self.smoothvelocity, 0, 0]), yawRate=0)
+                        self.cf1.cmdVelocityWorld(np.array([-self.smoothvelocity, 0, 0]), yawRate=0)
+                        self.cf2.cmdVelocityWorld(np.array([-self.smoothvelocity, 0, 0]), yawRate=0)
+                        self.cf3.cmdVelocityWorld(np.array([-self.smoothvelocity, 0, 0]), yawRate=0)
                         print("slide right, follow.")
 
 
                     if msg.data == 'LEFT SLIDE' :#start_left
                         print("slide left")
-                        self.cf.cmdVelocityWorld(np.array([self.smoothvelocity, 0, 0]), yawRate=0)
+                        self.cf1.cmdVelocityWorld(np.array([self.smoothvelocity, 0, 0]), yawRate=0)
+                        self.cf2.cmdVelocityWorld(np.array([self.smoothvelocity, 0, 0]), yawRate=0)
+                        self.cf3.cmdVelocityWorld(np.array([self.smoothvelocity, 0, 0]), yawRate=0)
 
-                    
                     if msg.data == 'UP SLIDE': #start_up
                         print("slide up")
-                        self.cf.cmdVelocityWorld(np.array([0, 0, self.smoothvelocity]), yawRate=0)
-                        
+                        self.cf1.cmdVelocityWorld(np.array([0, 0, self.smoothvelocity]), yawRate=0)
+                        self.cf2.cmdVelocityWorld(np.array([0, 0, self.smoothvelocity]), yawRate=0)
+                        self.cf3.cmdVelocityWorld(np.array([0, 0, self.smoothvelocity]), yawRate=0)
+
                     if msg.data == 'DOWN SLIDE': #start_down
                         print("slide down")
-                        self.cf.cmdVelocityWorld(np.array([0, 0, -self.smoothvelocity]), yawRate=0)
-
+                        self.cf1.cmdVelocityWorld(np.array([0, 0, -self.smoothvelocity]), yawRate=0)
+                        self.cf2.cmdVelocityWorld(np.array([0, 0, -self.smoothvelocity]), yawRate=0)
+                        self.cf3.cmdVelocityWorld(np.array([0, 0, -self.smoothvelocity]), yawRate=0)
 
                     if msg.data == 'ZOOM IN': #start_down
                         print("slide down")

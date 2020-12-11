@@ -12,8 +12,14 @@ def main():
     for cf in allcfs.crazyflies:
         print(cf.id)
         cf.takeoff(0.5, 2.5)
-        print("press button to continue")
-        swarm.input.waitUntilButtonPressed()
+        # if cf.id == 2:
+        #     cf.takeoff(0.5, 2.5)
+
+
+    print("press button to continue")
+    swarm.input.waitUntilButtonPressed()
+
+    for cf in allcfs.crazyflies:
         cf.land(0.04, 2.5)
 
 
