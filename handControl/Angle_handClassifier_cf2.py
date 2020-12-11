@@ -147,6 +147,9 @@ def recognizeHandGesture(landmarks):
   if (middleFingerState == 'CLOSE' and indexFingerState == 'OPENUP' and ringFingerState == 'CLOSE' and littleFingerState == 'CLOSE' ):
     recognizedHandGesture ="INDEX"
 
+  if (middleFingerState == 'OPENUP' and indexFingerState == 'OPENUP' and ringFingerState == 'OPENUP' and littleFingerState == 'CLOSE' ):
+    recognizedHandGesture ="THREE"
+
   if ( indexFingerState == 'CLOSE' and middleFingerState == 'CLOSE' and ringFingerState == 'CLOSE' and littleFingerState == 'CLOSE'):
     recognizedHandGesture = "FIST"
 
@@ -369,18 +372,19 @@ def execute():
         #print("video_slide: ", video_slide)
         #handslide = String()
 
-        text2 = str(id)+ str(video_slide[0])
+        #text2 = str(id)+ str(video_slide[0])
         speed = str(id) + "V" +str(video_slide[1])
         theta = str(id) + "A" +str(video_slide[2])
 
         print("THEEEEEEEEEEEEEEEETA: ",theta)
 
-        handsignal_publisher.publish(text2)
+        #handsignal_publisher.publish(text2)
         handsignal_publisher.publish(speed)
+        handsignal_publisher.publish(theta)
 
         cv2.putText(image, text[1:], (0,30), font, 1, (0, 0, 255), 2, cv2.LINE_4)
 
-        cv2.putText(image, text2[1:], (0,60), font, 1, (0, 0, 255), 2, cv2.LINE_4)
+        #cv2.putText(image, text2[1:], (0,60), font, 1, (0, 0, 255), 2, cv2.LINE_4)
         cv2.putText(image, "Speed :"+speed[2:], (0,90), font, 1, (0, 0, 255), 2, cv2.LINE_4)
         cv2.putText(image, "Theta :"+theta[2:], (0,120), font, 1, (0, 0, 255), 2, cv2.LINE_4)
 

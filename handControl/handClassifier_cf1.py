@@ -10,7 +10,7 @@ from collections import deque
 import statistics
 from statistics import mode #, multimode
 import math
-from collections import Counter
+
 
 
 def signal_handler(signal, frame):
@@ -235,91 +235,34 @@ def isSliding(landmarks,memo):
 
 
 def addToQueueAndAverage(d, image):
-    global theta
+
     d.append(image)
-    counter = Counter(d)
-    best = counter.most_common(3)
+
+    #print("queue", d)
+    #print ("len", len(d))
     
-    
-    if len(best)>2:
-
-      if best[0][0]=="":                    #Traitement des moments ou l'on bouge pas
-        best.remove(best[0])
-      elif best[1][0]=="":
-        best.remove(best[1])
-
-      if best[0][0]=="UP SLIDE" or best[0][0]=="DOWN SLIDE":
-        best[0],best[1]=best[1],best[0]
-      
-      if best[0][0]=="LEFT SLIDE":
-
-        if best[1][0]=="UP SLIDE":
-          theta=((best[1][1]/(best[0][1]+best[1][1]))*(math.pi/2))+math.pi/2
-        elif best[1][0]=="DOWN SLIDE":
-          theta=((best[0][1]/(best[0][1]+best[1][1]))*(math.pi/2))+math.pi
-      
-      if best[0][0]=="RIGHT SLIDE":
-
-        if best[1][0]=="UP SLIDE":
-          theta=((best[0][1]/(best[0][1]+best[1][1]))*(math.pi/2))
-        elif best[1][0]=="DOWN SLIDE":
-          theta=((best[1][1]/(best[0][1]+best[1][1]))*(math.pi/2))+math.pi*(3/2)
-
-    elif len(best)==2:
-      if best[0][0]=="":                    #Traitement des moments ou l'on bouge pas
-        best.remove(best[0])
-      elif best[1][0]=="":
-        best.remove(best[1])
-      
-      if best[0][0]=="RIGHT SLIDE":
-        theta=0
-      elif best[0][0]=="UP SLIDE":
-        theta=math.pi/2
-      elif best[0][0]=="LEFT SLIDE":
-        theta=math.pi
-      elif best[0][0]=="DOWN SLIDE":
-        theta=math.pi*(3/2)
-
-    else:
-      if best[0][0]=="RIGHT SLIDE":
-        theta=0
-      elif best[0][0]=="UP SLIDE":
-        theta=math.pi/2
-      elif best[0][0]=="LEFT SLIDE":
-        theta=math.pi
-      elif best[0][0]=="DOWN SLIDE":
-        theta=math.pi*(3/2)
-
-      
-
-
     if len(d) == precision:
-      
+      #print ("getting rid of ", d.popleft())
       try:
-        
+        #print ("average: ", mode(d))
         rep = mode(d)
         if (rep !=""):
-
           numberOfRep = d.count(rep)
           speed=numberOfRep/precision          #Speed value beetween 0-1
-
-          return([rep,speed,theta])
-
+          return([rep,speed])
         else:
-
           if  d.count(rep) <= precision*0.80  :
             a = list(filter(lambda a: a != "", d))
             rep2 = mode(a)
             numberOfRep2 = a.count(rep2)
-
-            return([rep2,numberOfRep2/precision,theta])
+            return([rep2,numberOfRep2/precision])
 
           else:
-            return(['',0,theta])
+            return(['',0])
       except:
-        return(['',0,theta])
+        return(['',0])
     else:
-      return(['',0,theta])
+      return(['',0])
 
 def execute():
     print("execute")
@@ -370,19 +313,14 @@ def execute():
         #handslide = String()
 
         text2 = str(id)+ str(video_slide[0])
-        speed = str(id) + "V" +str(video_slide[1])
-        theta = str(id) + "A" +str(video_slide[2])
-
-        print("THEEEEEEEEEEEEEEEETA: ",theta)
-
+        speed = str(id) +str(video_slide[1])
         handsignal_publisher.publish(text2)
         handsignal_publisher.publish(speed)
 
-        cv2.putText(image, text[1:], (0,30), font, 1, (0, 0, 255), 2, cv2.LINE_4)
+        cv2.putText(image, text[1:], (360,360), font, 1, (0, 0, 255), 2, cv2.LINE_4)
 
-        cv2.putText(image, text2[1:], (0,60), font, 1, (0, 0, 255), 2, cv2.LINE_4)
-        cv2.putText(image, "Speed :"+speed[2:], (0,90), font, 1, (0, 0, 255), 2, cv2.LINE_4)
-        cv2.putText(image, "Theta :"+theta[2:], (0,120), font, 1, (0, 0, 255), 2, cv2.LINE_4)
+        cv2.putText(image, text2[1:], (360,460), font, 1, (0, 0, 255), 2, cv2.LINE_4)
+        cv2.putText(image, speed[1:], (360,400), font, 1, (0, 0, 255), 2, cv2.LINE_4)
 
 
         #if text == 'SPIDERMAN':
@@ -406,10 +344,9 @@ if __name__ == '__main__':
         handsignal_publisher = rospy.Publisher('/cf2/signal', String, queue_size=10)
         #handspeed_publisher = rospy.Publisher('/cf2/speed', String, queue_size=10)
         #handforward_publisher = rospy.Publisher('/hand/forward', String, queue_size=10)
-        global d_signal, d_slide, trigger, precision, id, theta
-        id = 2
-        precision = 20              #we can have several precision for the speed
-        theta=0
+        global d_signal, d_slide, trigger, precision, id
+        id = 1
+        precision = 20               #we can have several precision for the speed
         d_signal = deque([], precision)
         d_slide = deque([], precision)
         trigger = []
