@@ -9,13 +9,12 @@ a=1.35
 b=0.85
 c=1.1
 
-########################################__création des fonctions__########################################################
+########################################__creation des fonctions__########################################################
 sigmoid = lambda v : 1/(1+m.exp(-v))
 distance_ellipsoid= lambda x,y,z : (x**2/a**2)+(y**2/b**2)+(z**2/c**2)     #distance avant le limite (entre 0-1)
 
 def cf_callback(data):
         global securitySpeed1,securitySpeed2,securitySpeed3
-        #create cf to be a TransformStamped:
         try:
             cf_id=data.data[0]
             speed=data.data[1:]
@@ -38,6 +37,11 @@ def cf_callback(data):
                 
             except:
                 securitySpeed_publisher.publish(data.data)
+
+                if data.data[1:] == "THREE":
+                    swarmFollow_publisher.publish("FOLLOW_ME")
+                if data.data[1:] == "INDEX":
+                    swarmFollow_publisher.publish("STOP_FOLLOW_ME")
             
 
         except:
@@ -83,6 +87,7 @@ if __name__ == '__main__':
     securitySpeed3=1
     rospy.init_node('security', anonymous=True)
     securitySpeed_publisher = rospy.Publisher('/cf2/filtredsignal', String, queue_size=10)
+    swarmFollow_publisher = rospy.Publisher('/swarmfollow', String, queue_size=10)
     cf2_subscriber = rospy.Subscriber('/tf', TFMessage, cf_callback)
     cf2_subscriber2 = rospy.Subscriber('/cf2/signal', String, cf_callback)
     rospy.spin()

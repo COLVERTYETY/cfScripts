@@ -96,7 +96,7 @@ class GestureDrone:
     def cf2_callback(self, msg):
 
 
-        global lastGesture, lastSlide
+        global lastGesture, lastSlide, timeHelper
 
         print(msg.data)
         if msg.data[0] == '1':
@@ -193,11 +193,11 @@ class GestureDrone:
                     self.velocity_filtered=float(msg.data[1:])
    
 
-                self.velocity_X=math.cos(self.angle)*self.velocity_base*self.velocity_filetred
-                self.velocity_Z=math.sin(self.angle))*self.velocity_base*self.velocity_filetred
+                self.velocity_X=math.cos(self.angle)*self.velocity_base*self.velocity_filtered
+                self.velocity_Z=math.sin(self.angle)*self.velocity_base*self.velocity_filtered
                 self.velocity_Y=0
 
-            self.cf.cmdVelocityWorld(np.array([self.velocity_Z, self.velocity_Y, self.velocity_X]), yawRate=0)
+            self.cf.cmdVelocityWorld(np.array([-self.velocity_X, self.velocity_Y, self.velocity_Z]), yawRate=0)
 
 
         
@@ -219,7 +219,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == '__main__':
 
-    global d_slide, lastGesture
+    global d_slide, lastGesture, timeHelper
     d_slide = deque([], 10)
     lastGesture="None"
 
