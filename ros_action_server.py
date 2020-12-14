@@ -57,12 +57,16 @@ class PerimeterMonitor(object):
         self.allcfs = self.swarm.allcfs
         self.timeHelper = self.swarm.timeHelper
         #speak (engine, "Action server activated.")
+        self.cf1_pose = Point()
         self.cf2_pose = Point()
         self.cf3_pose = Point()
         self.desired_position = Point()
+        #Arm the active drones that you wish to fly.
         self.enable_cf1 = False
         self.enable_cf2 = False
-        self.enable_cf3 = True
+        self.enable_cf3 = False
+        #Quick position verification.
+
 
 
 
@@ -151,7 +155,7 @@ class PerimeterMonitor(object):
         self._as.start()
         print("ready to kill.")
 
-    def cf2_callback(self):
+    def cf2_callback(self, data):
     	#create cf to be a TransformStamped:
     	# cf = data.transforms[0]
         # if cf.child_frame_id == 'cf2':
@@ -187,7 +191,7 @@ class PerimeterMonitor(object):
         #print("waypoint is", self.waypoint)
 
         """CHECK FOR COLLISIONS BETWEEN CF2 AND CF3"""
-        collision_distance = self.euclidean_distance(self.cf3_pose, 2)
+        collision_distance = self.euclidean_distance(self.cf1_pose, 2)
         print ("DISTANCE IS", collision_distance)
         if collision_distance < self.collision_tolerance:
             print ("COLLISION AT", collision_distance)
@@ -197,6 +201,7 @@ class PerimeterMonitor(object):
             # rospy.sleep(self.sleeptime)
 
         #and id 2 exists...
+        #rospy.spin()
         
 
 
@@ -507,7 +512,9 @@ class PerimeterMonitor(object):
         else:
             print ("no id detected... aborting?", id)
         #euclidean_distance= sqrt(pow((goal_pose.x - self.cf2_pose.x), 2) + pow((goal_pose.y - self.cf2_pose.y), 2) + pow((goal_pose.z - self.cf2_pose.z), 2))
-        #print("distance to goal is", round(euclidean_distance, 4))
+        print("offset_x:", goal_pose.x - self.cf2_pose.x)
+        print("offset_y:", goal_pose.y - self.cf2_pose.y)
+        print("offset_z:", goal_pose.z - self.cf2_pose.z)
         return euclidean_distance
 
     def takeoff_transition(self, id, goal):
@@ -541,4 +548,7 @@ if __name__ == "__main__":
     print ("Server name is:", rospy.get_name())
     collision_publisher = rospy.Publisher('/collision', String, queue_size=10)
     perimeter_server = PerimeterMonitor(str(rospy.get_name())+str(1))
+    #trying a quick pos_verification.
+    position_subscriber = rospy.Subscriber('/tf', TFMessage, perimeter_server.cf2_callback)
+    #Adding this to callback CONTINUOUSLY... 
     rospy.spin()
