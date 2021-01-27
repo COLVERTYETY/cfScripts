@@ -1,12 +1,19 @@
 
 #!/usr/bin/env python
 
+#Code initiated by txa on 20 October 2020
+#Comments added on 27 January 2021
+#Saved under https://github.com/ThomasCarstens/cfScripts/blob/master/dvic_demo.py
+#Some more explanations at txa-tuto: https://github.com/ThomasCarstens/txa-dvic-projects-tutos/tree/main/Behaviour%20Planning%20with%20ROS
+
 import numpy as np
 
 from pycrazyswarm import *
 import uav_trajectory
 
 import keyboard
+
+
 
 def fly():
     for i in range(TRIALS):
@@ -98,7 +105,7 @@ if __name__ == "__main__":
 
     traj4 = uav_trajectory.Trajectory()
     traj4.loadcsv("helicoidale.csv")
- 
+
     rdev18_traj = uav_trajectory.Trajectory()
     rdev18_traj.loadcsv("demo_shapes/rdev_18deg.csv")
 
@@ -114,7 +121,7 @@ if __name__ == "__main__":
     demo = raw_input ("choose a demo: \n 0: xy figure of 8+circle \n 1: zx figure of 8 \n 2: semicircle(issues) \n 3: helicoidale\n 4: rdev18\n 5:ldev18\n 6:f8(xz)\n 7: keyboard ctrl\n 8: demo of the death \n demo:")
     #TRIALS = int(raw_input ("nb of repeats: ")
     #TIMESCALE = raw_input ("speed factor where 1 is max 1m/s, 1m/s2: ")
-  
+
     if demo == '0':
                 TRIALS = 1
                 TIMESCALE = 1

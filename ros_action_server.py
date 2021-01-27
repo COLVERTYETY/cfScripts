@@ -88,7 +88,8 @@ class PerimeterMonitor(object):
 ################################################################################
 		# Action server initialisation. All actions initialised.
 
-		"""MOVES DRONE self.allcfs.crazyflies[0] TO Spiral Trajectory
+		"""Trajectory Reactions Functionality
+		MOVES DRONE self.allcfs.crazyflies[0] TO Spiral Trajectory
         trajectory_action ACTION SERVER [name='trajectory_action', drone: self.allcfs.crazyflies[0], variable:'_as2', callback:'execute_cb2']"""
         self._feedback2 = actionlib_tutorials.msg.doTrajFeedback()
         self._result2 = actionlib_tutorials.msg.doTrajResult()
@@ -97,7 +98,8 @@ class PerimeterMonitor(object):
         self._as2 = actionlib.SimpleActionServer(self._action_name2, actionlib_tutorials.msg.doTrajAction, execute_cb=self.execute_cb2, auto_start = False)
         self._as2.start()
 
-		"""MOVES DRONE goal.id TO POSE goal.point
+		"""Enter Perimeter Functionality
+		MOVES DRONE goal.id TO POSE goal.point
         detect_perimeter1 ACTION SERVER [name='detect_perimeter1', drone: goal.id, variable:'_as_cf3_go', callback:'execute_cb_cf3_go']"""
         self._feedback_cf3_go = actionlib_tutorials.msg.my_newFeedback()
         self._result_cf3_go = actionlib_tutorials.msg.my_newResult()
@@ -107,7 +109,8 @@ class PerimeterMonitor(object):
         self._as_cf3_go.start()
         print("Ready to move _cf3.")
 
-        """MOVING cf2 TO GOAL goal.point
+        """Close-in Functionality
+		MOVING cf2 TO GOAL goal.point
 		detect_perimeter ACTION SERVER [name='detect_perimeter', drone: cf2, variable:'_as_cf2', callback:'execute_cb_cf2']"""
         self._feedback_cf2 = actionlib_tutorials.msg.my_newFeedback()
         self._result_cf2 = actionlib_tutorials.msg.my_newResult()
@@ -117,7 +120,8 @@ class PerimeterMonitor(object):
         self._as_cf2.start()
         print("Ready to move _cf2.")
 
-		"""MOVES DRONE goal.id TO POSE goal.point (currently cf2)
+		"""Follow Functionality
+		MOVE DRONE 1 goal.id TO DRONE 2 POSE goal.point (currently cf2)
         cf3_follow_cf2 ACTION SERVER [name='cf3_follow_cf2', drone: goal.id, variable:'_cf3_follow_cf2', callback:'execute_cb_cf3_follow_cf2']"""
         self._feedback_cf3 = actionlib_tutorials.msg.my_newFeedback()
         self._result_cf3 = actionlib_tutorials.msg.my_newResult()
