@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+#Code initiated by txa on 20 November 2020
+#Comments added on 27 January 2021
+#Saved under https://github.com/ThomasCarstens/cfScripts/blob/master/ros_action_server.py
+#Some more explanations at txa-tuto: https://github.com/ThomasCarstens/txa-dvic-projects-tutos/tree/main/Behaviour%20Planning%20with%20ROS
+
+
 import numpy as np
 import rospy
 from rospy import Duration
@@ -21,12 +27,6 @@ import actionlib_tutorials.msg
 import actionlib_tutorials.srv
 
 from math import pow, atan2, sqrt
-# from gtts import gTTS
-# import playsound
-# try:
-#     from urllib.parse import urlparse
-# except ImportError:
-#      from urlparse import urlparse
 
 import pyttsx3
 global engine
@@ -35,12 +35,12 @@ engine = pyttsx3.init()
 
 #from six.moves.urllib import parse
 
+"""CTRL-C PREEMPTION"""
 def signal_handler(signal, frame):
 	sys.exit(0)
 
+"""AUDIO INTEGRATION"""
 def speak(engine, text):
-
-
     # tts = gTTS(text=text, lang="en")
     # filename = "voice.mp3"
     # tts.save(filename)
@@ -48,39 +48,48 @@ def speak(engine, text):
     engine.say(text)
     engine.runAndWait()
 
+"""INITIATED BY MAIN"""
 class PerimeterMonitor(object):
 
     def __init__(self, name):
         print("name is", name)
         #self._action_name = name
+
+		#Integrating Python API.
         self.swarm = Crazyswarm()
         self.allcfs = self.swarm.allcfs
         self.timeHelper = self.swarm.timeHelper
         #speak (engine, "Action server activated.")
+
+		#Making ROS Point messages for ROS pose updates.
         self.cf1_pose = Point()
         self.cf2_pose = Point()
         self.cf3_pose = Point()
         self.desired_position = Point()
+
         #Arm the active drones that you wish to fly.
         self.enable_cf1 = False
         self.enable_cf2 = False
         self.enable_cf3 = False
-        #Quick position verification.
 
-
-
-
+        #Class variables common to all drones.
         self.success = False
         self.collision_tolerance = 0.2
         self.sleeptime = 4.0
         self.justenoughsleeptime = 0.005
 
+		#Takeoff all drones that are enabled, by looking at list of active drones.
         for cf in self.allcfs.crazyflies:
-            if cf.id == 3 and self.enable_cf3 == True:            
+            if cf.id == 3 and self.enable_cf3 == True:
                 cf.takeoff(0.5, 5.0)
-            if cf.id == 2 and self.enable_cf2 == True:            
+            if cf.id == 2 and self.enable_cf2 == True:
                 cf.takeoff(0.5, 5.0)
 
+################################################################################
+		# Action server initialisation. All actions initialised.
+
+		"""MOVES DRONE self.allcfs.crazyflies[0] TO Spiral Trajectory
+        trajectory_action ACTION SERVER [name='trajectory_action', drone: self.allcfs.crazyflies[0], variable:'_as2', callback:'execute_cb2']"""
         self._feedback2 = actionlib_tutorials.msg.doTrajFeedback()
         self._result2 = actionlib_tutorials.msg.doTrajResult()
         self._action_name2 = 'trajectory_action'
@@ -88,6 +97,8 @@ class PerimeterMonitor(object):
         self._as2 = actionlib.SimpleActionServer(self._action_name2, actionlib_tutorials.msg.doTrajAction, execute_cb=self.execute_cb2, auto_start = False)
         self._as2.start()
 
+		"""MOVES DRONE goal.id TO POSE goal.point
+        detect_perimeter1 ACTION SERVER [name='detect_perimeter1', drone: goal.id, variable:'_as_cf3_go', callback:'execute_cb_cf3_go']"""
         self._feedback_cf3_go = actionlib_tutorials.msg.my_newFeedback()
         self._result_cf3_go = actionlib_tutorials.msg.my_newResult()
         self._action_name_cf3_go = 'detect_perimeter1'
@@ -96,6 +107,8 @@ class PerimeterMonitor(object):
         self._as_cf3_go.start()
         print("Ready to move _cf3.")
 
+        """MOVING cf2 TO GOAL goal.point
+		detect_perimeter ACTION SERVER [name='detect_perimeter', drone: cf2, variable:'_as_cf2', callback:'execute_cb_cf2']"""
         self._feedback_cf2 = actionlib_tutorials.msg.my_newFeedback()
         self._result_cf2 = actionlib_tutorials.msg.my_newResult()
         self._action_name_cf2 = 'detect_perimeter'
@@ -104,6 +117,8 @@ class PerimeterMonitor(object):
         self._as_cf2.start()
         print("Ready to move _cf2.")
 
+		"""MOVES DRONE goal.id TO POSE goal.point (currently cf2)
+        cf3_follow_cf2 ACTION SERVER [name='cf3_follow_cf2', drone: goal.id, variable:'_cf3_follow_cf2', callback:'execute_cb_cf3_follow_cf2']"""
         self._feedback_cf3 = actionlib_tutorials.msg.my_newFeedback()
         self._result_cf3 = actionlib_tutorials.msg.my_newResult()
         self._action_name_cf3 = 'cf3_follow_cf2'
@@ -118,7 +133,7 @@ class PerimeterMonitor(object):
         #self.setupKillService()
 
 
-    """MUST BE UPDATED"""
+    """TO MODIFY: THIS IS AN ATTEMPT TO INTEGRATE THE CS API MOTOR-KILL VIA A ROS SERVICE"""
     def handleKillService(self, req):
         for cf in self.allcfs.crazyflies:
             if cf.id == 2:
@@ -129,16 +144,15 @@ class PerimeterMonitor(object):
 
 
 
-
+	"""THIS CODE *WAITS FOR* POSE MESSAGES"""
     def PoseListener(self):
+		"""WAITING FOR ROS POSE MESSAGES. NO LONGER USEFUL USING PYTHON API, BUT MIGHT REVERT."""
         # A subscriber to the topic '/tf'. self.update_pose is called
         # when a message of type TFMessage is received.
 
 		#self.cf2_subscriber = rospy.Subscriber('/tf', tf2_msgs.msg.TFMessage, self.cf2_callback)
 
         #cf2_pose = rospy.wait_for_message("/tf", TFMessage, timeout=None)
-        self.cf2_callback()
-
 
 
         # while cf2_pose.transforms[0].child_frame_id != 'cf2':
@@ -149,13 +163,20 @@ class PerimeterMonitor(object):
         #     cf2_pose = rospy.wait_for_message("/tf", TFMessage, timeout=None)
         # self.cf2_callback(cf2_pose)
 
+		"""CALLBACK CURRENTLY FOR PYTHON API"""
+        self.cf2_callback()
 
+	"""OLD CODE *SETS UP* ROS POSE MESSAGES. NO LONGER USEFUL USING PYTHON API, BUT MIGHT REVERT."""
     def setupKillService(self):
         s = rospy.Service('kill_service', actionlib_tutorials.srv.killMotors(), self.handleKillService)
         self._as.start()
         print("ready to kill.")
 
+
+
     def cf2_callback(self, data):
+
+		"""OLD CODE CAPTURES ROS POSE MESSAGES. NO LONGER USEFUL USING PYTHON API, BUT MIGHT REVERT."""
     	#create cf to be a TransformStamped:
     	# cf = data.transforms[0]
         # if cf.child_frame_id == 'cf2':
@@ -168,7 +189,8 @@ class PerimeterMonitor(object):
         #     self.cf3_pose.y = cf.transform.translation.y
         #     self.cf3_pose.z = cf.transform.translation.z
         #     print("cf3_pose: received")
-        """GET POSE FROM CF API"""
+
+        """POSE TAKEN FROM CF API"""
         for cf in self.allcfs.crazyflies:
             #print(cf.id, cf.position()[0])
             if cf.id == 1:
@@ -187,10 +209,11 @@ class PerimeterMonitor(object):
                 self.cf3_pose.z = cf.position()[2]
                 #print("cf3_pose: received")
 
+        """OLD CODE USING A ROS POSE MESSAGE, NEW CODE IS A NUMPY ARRAY."""
         #self.waypoint = np.array([self.cf3_pose.x, self.cf3_pose.y + 0.3, self.cf3_pose.z])
         #print("waypoint is", self.waypoint)
 
-        """CHECK FOR COLLISIONS BETWEEN CF2 AND CF3"""
+        """CONTINUOUS CHECK FOR COLLISIONS BETWEEN CF2 AND CF3"""
         collision_distance = self.euclidean_distance(self.cf1_pose, 2)
         print ("DISTANCE IS", collision_distance)
         if collision_distance < self.collision_tolerance:
@@ -200,17 +223,18 @@ class PerimeterMonitor(object):
             #     cf.land(0.04, 2.5)
             # rospy.sleep(self.sleeptime)
 
-        #and id 2 exists...
+        #DO NOT ADD A SPIN HERE UNLESS YOU KNOW WHAT YOU ARE DOING :)
         #rospy.spin()
-        
 
+####################################################################################################
+"""ACTION EXECUTE_CALLBACKS. SEE ROS DOCUMENTATION OR BETTER, TXA TUTO."""
+#txa-tuto: https://github.com/ThomasCarstens/txa-dvic-projects-tutos/tree/main/Behaviour%20Planning%20with%20ROS
 
-
-
-
-
-
+	"""FOLLOWING PRE-DESIGNED TRAJECTORIES."""
     def execute_cb2(self, goal):
+		"""MOVES DRONE self.allcfs.crazyflies[0] TO Spiral Trajectory
+        trajectory_action ACTION SERVER [name='trajectory_action', drone: self.allcfs.crazyflies[0], variable:'_as_cf2', callback:'execute_cb2']"""
+
         speak (engine, "Spiral trajectory.")
         traj1 = uav_trajectory.Trajectory()
         traj1.loadcsv("helicoidale.csv")
@@ -218,10 +242,12 @@ class PerimeterMonitor(object):
         #r = rospy.Rate(10)
         rospy.wait_for_message('/tf', tf2_msgs.msg.TFMessage, timeout=None)
 
+		"""HELPER VARIABLES FOR THE ACTION SERVER INSTANCE"""
         # append the seeds for the fibonacci sequence
         self._feedback2.time_elapsed = Duration(5)
         self.success == False
 
+		"""CODE TO FOLLOW A TRAJECTORY"""
         TRIALS = 1
         TIMESCALE = 0.5
         for cf in self.allcfs.crazyflies:
@@ -235,7 +261,7 @@ class PerimeterMonitor(object):
 
             self.allcfs.crazyflies[0].land(targetHeight=0.06, duration=2.0)
             #timeHelper.sleep(3.0)
-
+			"""PREEMPTION CODE [TO VERIFY]"""
             if self._as2.is_preempt_requested():
                 rospy.loginfo('%s: Preempted' % self._action_name2)
                 self._as2.set_preempted()
@@ -244,7 +270,7 @@ class PerimeterMonitor(object):
             #now we test if he has reached the desired point.
         #self.takeoff_transition()
 
-
+		"""PREEMPTION CODE [TO VERIFY]"""
         if self.success == False:
 
             print ("Not yet...")
@@ -272,11 +298,12 @@ class PerimeterMonitor(object):
             rospy.loginfo('My feedback: %s' % self._feedback2)
             rospy.loginfo('%s: Succeeded' % self._action_name2)
             self._as2.set_succeeded(self._result2)
-
+		"""END OF CODE TO VERIFY"""
 
 
     def execute_cb_cf2(self, goal):
-        """togoal ACTION SERVER [name='togoal', variable:'_as_cf2', drone: cf2]"""
+        """MOVING cf2 TO GOAL goal.point
+		togoal ACTION SERVER [name='togoal', drone: cf2, variable:'_as_cf2', callback:'execute_cb_cf2']"""
 
         #speak (engine, "Moving to point.")
 
@@ -295,7 +322,7 @@ class PerimeterMonitor(object):
 
         #speak (engine, "YO")
         for cf in self.allcfs.crazyflies:
-            if cf.id == goal.id:             
+            if cf.id == goal.id:
                 print("send COMMANDS to cf...", goal.id)
                 self._feedback_cf2.position.position.x = cf.position()[0]
                 self._feedback_cf2.position.position.y = cf.position()[1]
@@ -312,7 +339,7 @@ class PerimeterMonitor(object):
                 rospy.loginfo('%s: Preempted' % self._action_name_cf2)
                 self._as_cf2.set_preempted()
                 # for cf in self.allcfs.crazyflies:
-                #     if cf.id == goal.id:             
+                #     if cf.id == goal.id:
                 #         print("LANDING cf...", goal.id)
                 #         cf.land(0.04, 2.5)
                 break
@@ -347,9 +374,10 @@ class PerimeterMonitor(object):
 
 
     def execute_cb_cf3_go(self, goal):
-        """togoal ACTION SERVER [name='togoal', variable:'_as_cf2', drone: cf2]"""
-        #speak (engine, "Moving to point.")
 
+		"""MOVES DRONE goal.id TO POSE goal.point"""
+        """detect_perimeter1 ACTION SERVER [name='detect_perimeter1', drone: goal.id, variable:'_as_cf3_go', callback:'execute_cb_cf3_go']"""
+		#speak (engine, "Moving to point.")
         #rospy.wait_for_message('/tf', tf2_msgs.msg.TFMessage, timeout=None)
         self.PoseListener()
 
@@ -365,7 +393,7 @@ class PerimeterMonitor(object):
 
         #speak (engine, "YO")
         for cf in self.allcfs.crazyflies:
-            if cf.id == goal.id:             
+            if cf.id == goal.id:
                 print("send COMMANDS to cf...", goal.id)
                 self._feedback_cf3_go.position.position.x = cf.position()[0]
                 self._feedback_cf3_go.position.position.y = cf.position()[1]
@@ -381,7 +409,7 @@ class PerimeterMonitor(object):
                 rospy.loginfo('%s: Preempted' % self._action_name_cf3_go)
                 self._as_cf3_go.set_preempted()
                 for cf in self.allcfs.crazyflies:
-                    if cf.id == goal.id:             
+                    if cf.id == goal.id:
                         print("LANDING cf...", goal.id)
                         cf.land(0.04, 2.5)
                 break
@@ -417,10 +445,13 @@ class PerimeterMonitor(object):
 
 
     def execute_cb_cf3_follow_cf2(self, goal):
-        """togoal ACTION SERVER [name='togoal', variable:'_as_cf2', drone: cf2]"""
-        #speak (engine, "Moving to point.")
 
+		"""MOVES DRONE goal.id TO POSE goal.point"""
+        """detect_perimeter1 ACTION SERVER [name='detect_perimeter1', drone: goal.id, variable:'_cf3_follow_cf2', callback:'execute_cb_cf3_follow_cf2']"""
+
+        #speak (engine, "Moving to point.")
         #rospy.wait_for_message('/tf', tf2_msgs.msg.TFMessage, timeout=None)
+
         self.PoseListener()
 
         print ("FOLLOW callback")
@@ -438,7 +469,7 @@ class PerimeterMonitor(object):
 
         speak (engine, "YO")
         # for cf in self.allcfs.crazyflies:
-        #     if cf.id == goal.id:             
+        #     if cf.id == goal.id:
         #         print("send COMMANDS to cf...", goal.id)
         #         #cf.takeoff(0.5, 5.0)
         #         #cf.goTo(self.waypoint, yaw=0, duration=2.0)
@@ -452,7 +483,7 @@ class PerimeterMonitor(object):
                 rospy.loginfo('%s: Preempted' % self._action_name_cf3)
                 self._as_cf3.set_preempted()
                 for cf in self.allcfs.crazyflies:
-                    if cf.id == goal.id:             
+                    if cf.id == goal.id:
                         print("LANDING cf...", goal.id)
                         cf.land(0.04, 2.5)
                 break
@@ -463,7 +494,7 @@ class PerimeterMonitor(object):
             print("waypoint is", self.waypoint)
 
             for cf in self.allcfs.crazyflies:
-                if cf.id == goal.id:             
+                if cf.id == goal.id:
                     #print("TRYING TO REACH GOAL...", goal.id)
                     #cf.takeoff(0.5, 5.0)
                     cf.goTo(self.waypoint, yaw=0, duration=self.justenoughsleeptime)
@@ -472,24 +503,10 @@ class PerimeterMonitor(object):
 
             self.stayclose_transition() #STOP WHEN HAND SIGN APPEARS.
 
-            # try:
-            #     # publish the feedback
-            #     self._as_cf3.publish_feedback(self._feedback_cf3)
-
-            # except rospy.ROSInterruptException:
-
-            #     speak (engine, "EXCEPTION")
-
-            #     rospy.loginfo("except clause opened")
-            #     pass
 
 
         if self.success_cf3 == True:
-            #for cf in self.allcfs.crazyflies:
-                #print(cf.id)
-                #print("press button to continue")
-                #self.swarm.input.waitUntilButtonPressed()
-                #cf.land(0.04, 2.5)
+
             print("Reached the perimeter!!")
             self.success_cf3 = False
             self._result_cf3.time_elapsed = Duration(5)
@@ -499,7 +516,7 @@ class PerimeterMonitor(object):
             self._as_cf3.set_succeeded(self._result_cf3)
 
 
-    """ CALCULATION FUNCTIONS """
+    """ CONDITION FULFILMENT FUNCTIONS """
 
     def euclidean_distance(self, goal_pose, id):
         """Euclidean distance between current pose and the goal."""
@@ -511,13 +528,15 @@ class PerimeterMonitor(object):
             euclidean_distance= sqrt(pow((goal_pose.x - self.cf3_pose.x), 2) + pow((goal_pose.y - self.cf3_pose.y), 2) + pow((goal_pose.z - self.cf3_pose.z), 2))
         else:
             print ("no id detected... aborting?", id)
-        #euclidean_distance= sqrt(pow((goal_pose.x - self.cf2_pose.x), 2) + pow((goal_pose.y - self.cf2_pose.y), 2) + pow((goal_pose.z - self.cf2_pose.z), 2))
+
+        #Distance between goal and cf2.
         print("offset_x:", goal_pose.x - self.cf2_pose.x)
         print("offset_y:", goal_pose.y - self.cf2_pose.y)
         print("offset_z:", goal_pose.z - self.cf2_pose.z)
         return euclidean_distance
 
     def takeoff_transition(self, id, goal):
+		"""Check if drone is within a certain tolerance from the goal"""
         distance_tolerance = 0.2
 
         if self.euclidean_distance(goal, id) < distance_tolerance:
@@ -527,12 +546,15 @@ class PerimeterMonitor(object):
                 self.success_cf3 = True
 
     def stayclose_transition(self):
+		"""Trigger function: when drone is too far from goal, enable trigger variable."""
         # distance_tolerance = 0.5
         # if self.euclidean_distance(goal, id) > distance_tolerance:
         #     if id == 2:
         #         self.success_cf2 = True
         #     if id == 3:
-        #         self.success_cf3 = True  
+        #         self.success_cf3 = True
+
+		"""Trigger function: when specific ROS Message appears, enable trigger variable."""
         try:
             follow_trigger = rospy.wait_for_message("/swarmfollow", String, timeout=0.3)
             if follow_trigger.data == "STOP_FOLLOW_ME":
@@ -540,15 +562,18 @@ class PerimeterMonitor(object):
         except:
             pass
 
+
+"""CTRL-C HANDLER"""
 signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
-    #rospy.init_node('hi') # CANNOT do this: conflicts with CrazyflieAPI.
+    #rospy.init_node('hi') # CANNOT do this: conflicts with CrazyflieAPI. Important!
 
     print ("Server name is:", rospy.get_name())
+
     collision_publisher = rospy.Publisher('/collision', String, queue_size=10)
     perimeter_server = PerimeterMonitor(str(rospy.get_name())+str(1))
-    #trying a quick pos_verification.
     position_subscriber = rospy.Subscriber('/tf', TFMessage, perimeter_server.cf2_callback)
-    #Adding this to callback CONTINUOUSLY... 
+
+    #Remove if you know what you're doing. Currrently used to callback CONTINUOUSLY...
     rospy.spin()
