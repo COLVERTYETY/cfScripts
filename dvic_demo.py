@@ -15,21 +15,36 @@ import keyboard
 
 
 
-def fly():
+def fly(id, allcfs, swarm, timeHelper, TRIALS, TIMESCALE):
     for i in range(TRIALS):
         #for cf in allcfs.crazyflies:
         #cf.takeoff(targetHeight=0.5, duration=3.0)
-	allcfs.crazyflies[0].takeoff(targetHeight=0.3, duration=3.0)
+        for cf in allcfs.crazyflies:
+                if cf.id == id:
+	                allcfs.crazyflies[0].takeoff(targetHeight=0.3, duration=3.0)
 
-	timeHelper.sleep(2.5)
-	    #for cf in allcfs.crazyflies:
-	    #    pos = cf.position() + np.array([0, 0, 1.0])
-	    #    cf.goTo(pos, 0, 2.0)
-	    #timeHelper.sleep(2.5)
-        allcfs.crazyflies[0].startTrajectory(0, timescale=TIMESCALE)
-	    #allcfs.crazyflies[0].startTrajectory(0, timescale=TIMESCALE, reverse=False)
-	    #timeHelper.sleep(traj1.duration * TIMESCALE + 2.0)
-        timeHelper.sleep(1.0)
+                        timeHelper.sleep(2.5)
+                        #for cf in allcfs.crazyflies:
+                        #    pos = cf.position() + np.array([0, 0, 1.0])
+                        #    cf.goTo(pos, 0, 2.0)
+                        #timeHelper.sleep(2.5)
+                        cf.startTrajectory(0, timescale=TIMESCALE)
+                        #allcfs.crazyflies[0].startTrajectory(0, timescale=TIMESCALE, reverse=False)
+                        #timeHelper.sleep(traj1.duration * TIMESCALE + 2.0)
+                        timeHelper.sleep(1.0)
+
+        if id == -1:
+                allcfs.crazyflies[0].takeoff(targetHeight=0.3, duration=3.0)
+
+                timeHelper.sleep(2.5)
+                #for cf in allcfs.crazyflies:
+                #    pos = cf.position() + np.array([0, 0, 1.0])
+                #    cf.goTo(pos, 0, 2.0)
+                #timeHelper.sleep(2.5)
+                cf.startTrajectory(0, timescale=TIMESCALE)
+                #allcfs.crazyflies[0].startTrajectory(0, timescale=TIMESCALE, reverse=False)
+                #timeHelper.sleep(traj1.duration * TIMESCALE + 2.0)
+                timeHelper.sleep(1.0)
 
 	print("press button to continue...")
 	swarm.input.waitUntilButtonPressed()
@@ -37,7 +52,7 @@ def fly():
 	allcfs.crazyflies[0].land(targetHeight=0.06, duration=2.0)
 	timeHelper.sleep(3.0)
 
-def fly_two_drones():
+def fly_two_drones(allcfs, swarm, timeHelper, TRIALS, TIMESCALE):
 
     allcfs.crazyflies[0].takeoff(targetHeight=0.5, duration=3.0)
     allcfs.crazyflies[1].takeoff(targetHeight=0.5, duration=3.0)
@@ -60,6 +75,30 @@ def fly_two_drones():
             #timeHelper.sleep(traj1.duration * TIMESCALE + 2.0)
         timeHelper.sleep(1.0)
 
+
+def fly_three_drones():
+
+    allcfs.crazyflies[0].takeoff(targetHeight=0.5, duration=3.0)
+    allcfs.crazyflies[1].takeoff(targetHeight=0.5, duration=3.0)
+    allcfs.crazyflies[2].takeoff(targetHeight=0.5, duration=3.0)
+    for i in range(TRIALS):
+        #allcfs.crazyflies[0].takeoff(targetHeight=0.5, duration=3.0)
+        #allcfs.crazyflies[1].takeoff(targetHeight=0.5, duration=3.0)
+
+        #timeHelper.sleep(2.5)
+        print("press button to continue...")
+        swarm.input.waitUntilButtonPressed()
+            #for cf in allcfs.crazyflies:
+            #    pos = cf.position() + np.array([0, 0, 1.0])
+            #    cf.goTo(pos, 0, 2.0)
+            #timeHelper.sleep(2.5)
+        #allcfs.crazyflies[0].startTrajectory(0, timescale=TIMESCALE)
+        allcfs.crazyflies[0].startTrajectory(0, timescale=TIMESCALE)
+        allcfs.crazyflies[1].startTrajectory(0, timescale=TIMESCALE)
+        allcfs.crazyflies[2].startTrajectory(0, timescale=TIMESCALE)
+        #allcfs.crazyflies[0].startTrajectory(0, timescale=TIMESCALE, reverse=True)
+        #timeHelper.sleep(traj1.duration * TIMESCALE + 2.0)
+        timeHelper.sleep(1.0)
 
 
 def fly_nostops():
@@ -128,14 +167,20 @@ if __name__ == "__main__":
         #for i in range(TRIALS):
                 for cf in allcfs.crazyflies:
                         cf.uploadTrajectory(0, 0, traj0)
+                if nb_drones == "3":
+                	fly_three_drones()
+                        print("press button to continue...")
+                        swarm.input.waitUntilButtonPressed()
+                        allcfs.land(targetHeight=0.06, duration=2.0)
+                        timeHelper.sleep(3.0)
                 if nb_drones == "2":
-                	fly_two_drones()
+                	fly_two_drones(allcfs, swarm, timeHelper, TRIALS, TIMESCALE)
                         print("press button to continue...")
                         swarm.input.waitUntilButtonPressed()
                         allcfs.land(targetHeight=0.06, duration=2.0)
                         timeHelper.sleep(3.0)
                 if nb_drones == "1":
-                        fly()
+                        fly(-1, allcfs, swarm, timeHelper, TRIALS, TIMESCALE)
 
                 #fly()
 
@@ -155,9 +200,9 @@ if __name__ == "__main__":
                 for cf in allcfs.crazyflies:
                         cf.uploadTrajectory(0, 0, traj4)
                 if nb_drones == "2":
-                        fly_two_drones()
+                        fly_two_drones(allcfs, timeHelper, TRIALS, TIMESCALE)
                 if nb_drones == "1":
-                        fly()
+                        fly(-1, allcfs, swarm, timeHelper, TRIALS, TIMESCALE)
 
 
 
@@ -167,7 +212,7 @@ if __name__ == "__main__":
         #for i in range(TRIALS):
                 for cf in allcfs.crazyflies:
                         cf.uploadTrajectory(0, 0, rdev18_traj)
-                fly()
+                fly(-1, allcfs, swarm, timeHelper, TRIALS, TIMESCALE)
 
     if demo == '5':
                 TRIALS = 1
@@ -175,7 +220,7 @@ if __name__ == "__main__":
         #for i in range(TRIALS):
                 for cf in allcfs.crazyflies:
                         cf.uploadTrajectory(0, 0, ldev18_traj)
-                fly()
+                fly(-1, allcfs, swarm, timeHelper, TRIALS, TIMESCALE)
 
     if demo == '6':
                 TRIALS = 1
@@ -183,7 +228,7 @@ if __name__ == "__main__":
         #for i in range(TRIALS):
                 for cf in allcfs.crazyflies:
                         cf.uploadTrajectory(0, 0, f8xz_traj)
-                fly()
+                fly(-1, allcfs, swarm, timeHelper, TRIALS, TIMESCALE)
 
 
     if demo == '7':

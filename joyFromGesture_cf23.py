@@ -164,12 +164,12 @@ class GestureDrone:
 
             if msg.data == 'RIGHT': #start_right
                 print(".")
-                self.cf.cmdVelocityWorld(np.array([-self.velocity, 0, 0]), yawRate=0)
+                self.cf.cmdVelocityWorld(np.array([0, -self.velocity, 0]), yawRate=0)
 
 
             if msg.data == 'LEFT': #start_right
                 print(".")
-                self.cf.cmdVelocityWorld(np.array([self.velocity, 0, 0]), yawRate=0)
+                self.cf.cmdVelocityWorld(np.array([0, self.velocity, 0]), yawRate=0)
 
 
             # if signal == 'c': #start_down
@@ -240,13 +240,13 @@ class GestureDrone:
                         #self.smoothvelocity= 0.3
                 except:
                     if msg.data == 'RIGHT SLIDE' :#start_right
-                        self.cf.cmdVelocityWorld(np.array([-self.smoothvelocity, 0, 0]), yawRate=0)
+                        self.cf.cmdVelocityWorld(np.array([0, -self.smoothvelocity, 0]), yawRate=0)
                         print("slide right, follow.")
 
 
                     if msg.data == 'LEFT SLIDE' :#start_left
                         print("slide left")
-                        self.cf.cmdVelocityWorld(np.array([self.smoothvelocity, 0, 0]), yawRate=0)
+                        self.cf.cmdVelocityWorld(np.array([0, self.smoothvelocity, 0]), yawRate=0)
 
                     
                     if msg.data == 'UP SLIDE': #start_up
@@ -258,15 +258,15 @@ class GestureDrone:
                         self.cf.cmdVelocityWorld(np.array([0, 0, -self.smoothvelocity]), yawRate=0)
 
 
-                    if msg.data == 'ZOOM IN': #start_down
-                        print("slide down")
-                        self.cf.cmdVelocityWorld(np.array([0, -self.smoothvelocity, 0]), yawRate=0)
+                    # if msg.data == 'ZOOM IN': #start_down
+                    #     print("slide down")
+                    #     self.cf.cmdVelocityWorld(np.array([0, -self.smoothvelocity, 0]), yawRate=0)
 
 
-                    if msg.data == 'ZOOM OUT': #start_down
-                        print("slide down")
+                    # if msg.data == 'ZOOM OUT': #start_down
+                    #     print("slide down")
                         
-                        self.cf.cmdVelocityWorld(np.array([0, self.smoothvelocity, 0]), yawRate=0)
+                    #     self.cf.cmdVelocityWorld(np.array([0, self.smoothvelocity, 0]), yawRate=0)
 
             if msg.data != "" and msg.data != "ZOOM IN" and msg.data != "ZOOM OUT" and msg.data != 'LEFT SLIDE' and msg.data != 'RIGHT SLIDE' and msg.data != 'UP SLIDE' and msg.data != 'DOWN SLIDE':
                 lastGesture = msg.data

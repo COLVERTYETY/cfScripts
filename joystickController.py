@@ -11,6 +11,7 @@ import signal
 
 import rospy
 from sensor_msgs.msg import Joy
+from std_msgs.msg import String
 
 Z = 0.3
 sleepRate = 30
@@ -24,48 +25,58 @@ class KeyboardDrone:
         self.cf = cf
         self.velocity = 0.75
         self.ang_velocity = 120
-        self.takeoff_height = 0.3
+        self.takeoff_height = 0.5
 
         self.sleeptime = 0.5
         #self.max_hight = 0.8
         #self.hight = 0.0
-        print ('Press u to take off!')
+        #print ('Press u to take off!')
+
+        self.cf.takeoff(targetHeight=self.takeoff_height, duration=1.0)
+        # self.cf.cmdVelocityWorld(np.array([0, 0, 0]), yawRate=0.1)
 
 
 
-#cf.cmdVelocityWorld(np.array([self.velocity, 0, 0]), yawRate=0)
     def on_press(self, key):
         # A subscriber to the topic '/joy'. self.on_press is called
         # when a message of type Joy is received.
 
-        if key.axes[0]== 1:
+        if key.data =='LEFT':
             print('LEFT')
+            self.cf.goTo(np.array([0.5, 0, 0.5]), 0, duration=1.0, groupMask=0)
 
-        # if key.axes[0]== 0:
-        #     print('NOTHING')
-
-        if key.axes[0]== -1:
+        if key.data =='RIGHT':
             print('RIGHT')
+            self.cf.goTo(np.array([-0.5, 0, 0.5]), 0, duration=1.0, groupMask=0)
+
+        # if key.axes[0]== 1:
+        #     print('LEFT')
+        #     #self.cf.cmdVelocityWorld(np.array([0, 0, 0]), yawRate=0.1)
+        # # if key.axes[0]== 0:
+        # #     print('NOTHING')
+
+        # if key.axes[0]== -1:
+        #     print('RIGHT')
+        #     #self.cf.cmdVelocityWorld(np.array([0, 0, 0]), yawRate=0.1)
+
+        # if key.axes[1]== 1:
+        #     print('UP')#start_forward
+        #     #self.cf.cmdVelocityWorld(np.array([self.velocity, 0, 0]), yawRate=0)
+
+        # # if key.axes[1]== 0:
+        # #     print('NOTHING')
+
+        # if key.axes[1]== -1:
+        #     print('DOWN')
 
 
-        if key.axes[1]== 1:
-            print('UP')#start_forward
-            self.cf.cmdVelocityWorld(np.array([self.velocity, 0, 0]), yawRate=0)
 
-        # if key.axes[1]== 0:
-        #     print('NOTHING')
+        # if key.buttons[0]== 1:
+        #     print('TAKEOFF') #take_off
+        #     #self.cf.takeoff(targetHeight=self.takeoff_height, duration=1.0)
 
-        if key.axes[1]== -1:
-            print('DOWN')
-
-
-
-        if key.buttons[0]== 1:
-            print('TAKEOFF') #take_off
-            self.cf.takeoff(targetHeight=self.takeoff_height, duration=1.0)
-
-        if key.buttons[1]== 1:
-            print('LAND')
+        # if key.buttons[1]== 1:
+        #     print('LAND')
 
         # if key.buttons[0]== 0:
         #     print('DOWN')
@@ -103,8 +114,8 @@ class KeyboardDrone:
         #if key.char == 'e':
         #    self.cf.start_turn_right(self.ang_velocity)
 
-    def on_release (self, key):
-        self.cf.cmdVelocityWorld(np.array([0, 0, 0]), yawRate=0)
+    # def on_release (self, key):
+    #     self.cf.cmdVelocityWorld(np.array([0, 0, 0]), yawRate=0)
 
 signal.signal(signal.SIGINT, signal_handler)
 
@@ -119,7 +130,10 @@ if __name__ == '__main__':
     #     listener.join()
     #collision_publisher = rospy.Publisher('/collision', String, queue_size=10)
     #perimeter_server = PerimeterMonitor(str(rospy.get_name())+str(1))
-    position_subscriber = rospy.Subscriber('/joy', Joy, drone.on_press)
+
+    #position_subscriber = rospy.Subscriber('/joy', Joy, drone.on_press)
+    neuro_subscriber = rospy.Subscriber("/neuro_output",
+            String, drone.on_press,  queue_size = 1)
 
     #Remove if you know what you're doing. Currrently used to callback CONTINUOUSLY...
     rospy.spin()

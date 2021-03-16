@@ -53,7 +53,7 @@ class KeyboardDrone:
 
         if key.char == 'l':
             #print('Kill engines')
-	    #cf.cmdStop()
+	        #cf.cmdStop()
             self.cf.land(0.05, duration=1.0)
 
             #return False
