@@ -1,0 +1,40 @@
+
+<launch>
+
+<group>
+    <remap from='detect_perimeter' to='drone1detect_perimeter'/>
+    <node name='drone1' pkg='crazyswarm' type='ros_action_server.py'>
+    </node>
+</group>
+
+<group>
+    <remap from='detect_perimeter' to='drone2detect_perimeter'/>
+    <node name='drone2' pkg='crazyswarm' type='ros_action_server.py'>
+    </node>
+</group>
+
+<group>
+    <remap from='detect_perimeter' to='drone3detect_perimeter'/>
+    <node name='drone3' pkg='crazyswarm' type='ros_action_server.py'>
+    </node>
+</group>
+
+<group>
+    <remap from='land_' to='land_drone1'/>
+    <node name='land_drone1' pkg='crazyswarm' type='ros_action_server.py'>
+    </node>
+</group>
+
+<group>
+    <remap from='land_' to='land_drone2'/>
+    <node name='land_drone2' pkg='crazyswarm' type='ros_action_server.py'>
+    </node>
+</group>
+
+<group>
+    <remap from='land_' to='land_drone3'/>
+    <node name='land_drone3' pkg='crazyswarm' type='ros_action_server.py'>
+    </node>
+</group>
+
+</launch>
